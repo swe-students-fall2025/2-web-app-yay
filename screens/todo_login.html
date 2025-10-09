@@ -6,20 +6,20 @@
   <title>To-Do List - Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-neutral-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
-  
-  <div class="bg-neutral-800 rounded-2xl shadow-2xl p-8 w-full max-w-md border border-neutral-700">
+<body class="bg-gray-50 text-gray-900 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-gray-200">
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-white mb-2">To-Do List</h1>
-      <p class="text-gray-400">Organize your tasks efficiently</p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">To-Do List</h1>
+      <p class="text-gray-500">Organize your tasks efficiently</p>
     </div>
 
     <!-- Login/Register Toggle -->
-    <div class="flex mb-6 bg-neutral-700 rounded-lg p-1">
-      <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-neutral-900 text-white font-semibold transition">
+    <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+      <button id="loginTab" class="flex-1 py-2 px-4 rounded-md bg-white text-gray-900 font-semibold shadow-sm transition">
         Login
       </button>
-      <button id="registerTab" class="flex-1 py-2 px-4 rounded-md text-gray-400 font-semibold transition hover:text-gray-200">
+      <button id="registerTab" class="flex-1 py-2 px-4 rounded-md text-gray-500 font-semibold transition hover:text-gray-800">
         Register
       </button>
     </div>
@@ -27,19 +27,19 @@
     <!-- Login Form -->
     <form id="loginForm" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
         <input type="text" id="loginUsername" required
-          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-100"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-900 bg-white"
           placeholder="Enter your username">
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
         <input type="password" id="loginPassword" required
-          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-100"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-900 bg-white"
           placeholder="Enter your password">
       </div>
       <button type="submit"
-        class="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition shadow">
+        class="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition shadow">
         Login
       </button>
     </form>
@@ -47,25 +47,25 @@
     <!-- Register Form (Hidden by default) -->
     <form id="registerForm" class="space-y-4 hidden">
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
         <input type="text" id="registerUsername" required
-          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-100"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-900 bg-white"
           placeholder="Choose a username">
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
         <input type="password" id="registerPassword" required
-          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-100"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-900 bg-white"
           placeholder="Create a password">
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
         <input type="password" id="confirmPassword" required
-          class="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-100"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none text-gray-900 bg-white"
           placeholder="Confirm your password">
       </div>
       <button type="submit"
-        class="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition shadow">
+        class="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition shadow">
         Register
       </button>
     </form>
@@ -78,17 +78,17 @@
     const registerForm = document.getElementById('registerForm');
 
     loginTab.addEventListener('click', () => {
-      loginTab.classList.add('bg-neutral-900', 'text-white');
-      registerTab.classList.remove('bg-neutral-900', 'text-white');
-      registerTab.classList.add('text-gray-400');
+      loginTab.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+      registerTab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+      registerTab.classList.add('text-gray-500');
       loginForm.classList.remove('hidden');
       registerForm.classList.add('hidden');
     });
 
     registerTab.addEventListener('click', () => {
-      registerTab.classList.add('bg-neutral-900', 'text-white');
-      loginTab.classList.remove('bg-neutral-900', 'text-white');
-      loginTab.classList.add('text-gray-400');
+      registerTab.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+      loginTab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+      loginTab.classList.add('text-gray-500');
       registerForm.classList.remove('hidden');
       loginForm.classList.add('hidden');
     });
