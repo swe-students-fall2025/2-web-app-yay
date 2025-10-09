@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - To-Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Task History</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="p-4 pb-24">
+        
+        <div class="mb-6">
+            <div class="relative">
+                <input type="text" id="searchInput" 
+                    class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition"
+                    placeholder="Search completed tasks...">
+                <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Filter Options -->
+        <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">Filter by Category</h3>
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button onclick="filterByCategory('All')" 
+                    class="filter-btn px-4 py-2 bg-gray-800 text-white rounded-full text-sm font-semibold whitespace-nowrap">
+                    All
+                </button>
+                <button onclick="filterByCategory('Work')" 
+                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
+                    Work
+                </button>
+                <button onclick="filterByCategory('Personal')" 
+                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
+                    Personal
+                </button>
+                <button onclick="filterByCategory('Shopping')" 
+                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
+                    Shopping
+                </button>
+                <button onclick="filterByCategory('Health')" 
+                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
+                    Health
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="bg-white rounded-lg p-4 shadow text-center">
+                <div class="text-3xl font-bold text-gray-800" id="totalCompleted">0</div>
+                <div class="text-sm text-gray-600 mt-1">Total Completed</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow text-center">
+                <div class="text-3xl font-bold text-gray-700" id="thisWeek">0</div>
+                <div class="text-sm text-gray-600 mt-1">This Week</div>
+            </div>
+        </div>
+
+        <section>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Completed Tasks</h2>
+            <div id="historyContainer" class="space-y-3"></div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+        <div class="flex justify-around items-center">
+            <a href="dashboard.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                <span class="text-xs mt-1">Home</span>
+            </a>
+            <a href="history.html" class="flex flex-col items-center text-gray-800">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs mt-1 font-semibold">History</span>
+            </a>
+            <a href="timer.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-xs mt-1">Timer</span>
+            </a>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { getPriorityBadgeClasses as getPriorityColor, formatDisplayDate as formatDate, getCategories, getCategoryByName } from './common.js';
+        
+        // Dummy data for completed tasks
+        const completedTasks = [];
+
+        let currentFilter = 'All';
+        let searchQuery = '';
+
+        // Get category color for a task
+        function getCategoryColor(categoryName) {
+            const category = getCategoryByName(categoryName);
+            return category ? category.customColor : '#6b7280'; // Default gray
+        }
+
+        // Calculate tasks this week
+        function getTasksThisWeek() {
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            return completedTasks.filter(task => new Date(task.completedDate) >= oneWeekAgo).length;
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalCompleted').textContent = completedTasks.length;
+            document.getElementById('thisWeek').textContent = getTasksThisWeek();
+        }
+
+        // Filter tasks
+        function getFilteredTasks() {
+            return completedTasks.filter(task => {
+                const matchesCategory = currentFilter === 'All' || task.category === currentFilter;
+                const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    task.category.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+        }
+
+        // Render tasks
+        function renderTasks() {
+            const container = document.getElementById('historyContainer');
+            const filteredTasks = getFilteredTasks();
+
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-gray-500">No completed tasks found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTasks.map(task => {
+                const categoryColor = getCategoryColor(task.category);
+                return `
+                <div class="bg-white rounded-lg p-4 shadow border-l-4 border-gray-500">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <h3 class="font-semibold text-gray-800">${task.title}</h3>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <span class="text-xs px-2 py-1 ${getPriorityColor(task.priority)} rounded-full font-medium">
+                                    ${task.priority}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full font-medium text-white" style="background-color: ${categoryColor}">
+                                    ${task.category}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                ✓ Completed on ${formatDate(task.completedDate)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Filter by category
+        window.filterByCategory = function(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-800', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            const buttons = Array.from(document.querySelectorAll('.filter-btn'));
+            const active = buttons.find(b => b.textContent.trim() === category);
+            if (active) {
+                active.classList.remove('bg-gray-200', 'text-gray-700');
+                active.classList.add('bg-gray-800', 'text-white');
+            }
+            renderTasks();
+        };
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderTasks();
+        });
+
+        // Initial render
+        updateStats();
+        renderTasks();
+
+        // TODO: Connect to backend
+    </script>
+</body>
+</html>
