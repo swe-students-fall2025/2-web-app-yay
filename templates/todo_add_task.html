@@ -12,86 +12,101 @@
     <header class="bg-white shadow-sm sticky top-0 z-10">
         <div class="px-4 py-4">
             <div class="flex items-center gap-3">
-                <button onclick="window.location.href='dashboard.html'" class="text-gray-600 hover:text-gray-800">
+                <a href="/dashboard" class="text-gray-600 hover:text-gray-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                </button>
+                </a>
                 <h1 class="text-2xl font-bold text-gray-800">Add New Task</h1>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="p-4 pb-24">
+    <main class="p-4 pb-24 max-w-2xl mx-auto">
         
-        <form id="addTaskForm" class="space-y-5">
+        <form method="POST" action="/add-task" class="space-y-5">
             
             <!-- Task Title -->
             <div class="bg-white rounded-lg p-4 shadow">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Task Title *</label>
-                <input type="text" id="taskTitle" required
+                <input type="text" name="title" required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition"
                     placeholder="What needs to be done?">
             </div>
 
             <!-- Category Selection -->
             <div class="bg-white rounded-lg p-4 shadow">
-                <div class="flex items-center justify-between mb-3">
-                    <label class="block text-sm font-semibold text-gray-700">Category *</label>
-                    <button type="button" id="customizeColorsBtn" class="text-xs text-gray-600 hover:text-gray-800 underline">
-                        Customize Colors
-                    </button>
-                </div>
-                <div id="categoryOptions" class="grid grid-cols-2 gap-2"></div>
-                
-                <!-- Color Customization Panel (Hidden by default) -->
-                <div id="colorCustomizationPanel" class="hidden mt-4 pt-4 border-t border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Customize Category Colors</h4>
-                    <div id="colorCustomizationOptions" class="space-y-3"></div>
-                </div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Category *</label>
+                <select name="category_id" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition">
+                    <option value="">Select a category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if not categories %}
+                <p class="text-sm text-gray-500 mt-2">No categories yet. <a href="/dashboard" class="text-blue-600 hover:underline">Add one from the dashboard</a>.</p>
+                {% endif %}
             </div>
 
             <!-- Priority Selection -->
             <div class="bg-white rounded-lg p-4 shadow">
                 <label class="block text-sm font-semibold text-gray-700 mb-3">Priority *</label>
                 <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="selectPriority('High')" 
-                        class="priority-btn py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:border-red-500 hover:bg-red-50 hover:text-red-700 transition">
-                        🔴 High
-                    </button>
-                    <button type="button" onclick="selectPriority('Medium')" 
-                        class="priority-btn py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:border-yellow-500 hover:bg-yellow-50 hover:text-yellow-700 transition">
-                        🟡 Medium
-                    </button>
-                    <button type="button" onclick="selectPriority('Low')" 
-                        class="priority-btn py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:border-green-500 hover:bg-green-50 hover:text-green-700 transition">
-                        🟢 Low
-                    </button>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="high" required class="hidden peer">
+                        <div class="py-3 text-center rounded-lg border-2 border-gray-300 text-gray-700 font-semibold peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 hover:border-red-400 transition">
+                            🔴 High
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="medium" required class="hidden peer">
+                        <div class="py-3 text-center rounded-lg border-2 border-gray-300 text-gray-700 font-semibold peer-checked:border-yellow-500 peer-checked:bg-yellow-50 peer-checked:text-yellow-700 hover:border-yellow-400 transition">
+                            🟡 Medium
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="priority" value="low" required class="hidden peer">
+                        <div class="py-3 text-center rounded-lg border-2 border-gray-300 text-gray-700 font-semibold peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 hover:border-green-400 transition">
+                            🟢 Low
+                        </div>
+                    </label>
                 </div>
+            </div>
+
+            <!-- Status Selection -->
+            <div class="bg-white rounded-lg p-4 shadow">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Status *</label>
+                <select name="status" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition">
+                    <option value="todo">To Do</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="done">Done</option>
+                </select>
             </div>
 
             <!-- Due Date -->
             <div class="bg-white rounded-lg p-4 shadow">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Due Date *</label>
-                <input type="date" id="dueDate" required
+                <input type="date" name="due_date" required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition">
             </div>
 
             <!-- Description (Optional) -->
             <div class="bg-white rounded-lg p-4 shadow">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Description (Optional)</label>
-                <textarea id="taskDescription" rows="4"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition resize-none"
+                <textarea name="description" rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition resize-none"
                     placeholder="Add any additional details..."></textarea>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex gap-3">
-                <button type="button" onclick="window.location.href='dashboard.html'"
-                    class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition">
+                <a href="/dashboard"
+                    class="flex-1 text-center bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition">
                     Cancel
-                </button>
+                </a>
                 <button type="submit"
                     class="flex-1 bg-gray-800 text-white py-4 rounded-lg font-semibold hover:bg-gray-900 transition">
                     Save Task
@@ -101,167 +116,5 @@
 
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
-        <div class="flex justify-around items-center">
-            <a href="dashboard.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                <span class="text-xs mt-1">Home</span>
-            </a>
-            <a href="history.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-xs mt-1">History</span>
-            </a>
-            <a href="timer.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-xs mt-1">Timer</span>
-            </a>
-        </div>
-    </nav>
-
-    <script type="module">
-        import { getCategories, colorOptions, updateCategoryColor, toggleSelectedButtonStyles } from './common.js';
-
-        let selectedCategory = null;
-        let selectedPriority = null;
-        let categories = getCategories();
-
-        // Render category options and wire click handlers
-        function renderCategories() {
-            const container = document.getElementById('categoryOptions');
-            container.innerHTML = categories.map(cat => `
-                <button type="button" data-category="${cat.id}"
-                    class="category-btn py-3 px-4 rounded-lg border-2 border-gray-300 font-semibold transition hover:border-gray-500 hover:shadow-md">
-                    <span class="w-3 h-3 rounded-full mr-2 inline-block" style="background-color: ${cat.customColor}"></span>
-                    ${cat.name}
-                </button>
-            `).join('');
-
-            container.querySelectorAll('.category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const categoryId = Number(btn.getAttribute('data-category'));
-                    selectedCategory = categoryId;
-                    toggleSelectedButtonStyles(
-                        container.querySelectorAll('.category-btn'),
-                        btn,
-                        ['border-gray-600', 'bg-gray-100', 'text-gray-800'],
-                        ['border-gray-300', 'text-gray-700']
-                    );
-                });
-            });
-        }
-
-        // Render color customization options
-        function renderColorCustomization() {
-            const container = document.getElementById('colorCustomizationOptions');
-            container.innerHTML = categories.map(cat => `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-4 h-4 rounded-full" style="background-color: ${cat.customColor}"></span>
-                        <span class="text-sm font-medium text-gray-700">${cat.name}</span>
-                    </div>
-                    <div class="flex gap-1">
-                        ${colorOptions.map(color => `
-                            <button type="button" 
-                                data-category-id="${cat.id}" 
-                                data-color-value="${color.value}"
-                                class="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-gray-400 transition ${color.bgClass} ${cat.customColor === color.value ? 'ring-2 ring-gray-500' : ''}"
-                                title="${color.name}">
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-
-            // Wire color selection
-            container.querySelectorAll('button[data-color-value]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const categoryId = Number(btn.getAttribute('data-category-id'));
-                    const colorValue = btn.getAttribute('data-color-value');
-                    
-                    updateCategoryColor(categoryId, colorValue);
-                    categories = getCategories(); // Refresh local copy
-                    renderCategories(); // Re-render with new colors
-                    renderColorCustomization(); // Re-render customization panel
-                });
-            });
-        }
-
-        // Toggle color customization panel
-        function toggleColorCustomization() {
-            const panel = document.getElementById('colorCustomizationPanel');
-            const btn = document.getElementById('customizeColorsBtn');
-            
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                btn.textContent = 'Hide Colors';
-                renderColorCustomization();
-            } else {
-                panel.classList.add('hidden');
-                btn.textContent = 'Customize Colors';
-            }
-        }
-
-        // Wire priority buttons with explicit event usage
-        function wirePriorityButtons() {
-            const buttons = document.querySelectorAll('.priority-btn');
-            buttons.forEach(btn => {
-                const label = btn.textContent.trim();
-                const priority = label.includes('High') ? 'High' : label.includes('Medium') ? 'Medium' : 'Low';
-                btn.addEventListener('click', (ev) => {
-                    selectedPriority = priority;
-                    buttons.forEach(b => {
-                        b.classList.remove('border-red-500', 'bg-red-50', 'text-red-700');
-                        b.classList.remove('border-yellow-500', 'bg-yellow-50', 'text-yellow-700');
-                        b.classList.remove('border-green-500', 'bg-green-50', 'text-green-700');
-                        b.classList.add('border-gray-300', 'text-gray-700');
-                    });
-                    const current = ev.currentTarget;
-                    if (priority === 'High') {
-                        current.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
-                    } else if (priority === 'Medium') {
-                        current.classList.add('border-yellow-500', 'bg-yellow-50', 'text-yellow-700');
-                    } else {
-                        current.classList.add('border-green-500', 'bg-green-50', 'text-green-700');
-                    }
-                    current.classList.remove('border-gray-300', 'text-gray-700');
-                });
-            });
-        }
-
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dueDate').setAttribute('min', today);
-        document.getElementById('dueDate').value = today;
-
-        // Handle form submission
-        document.getElementById('addTaskForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (!selectedCategory) { alert('Please select a category'); return; }
-            if (!selectedPriority) { alert('Please select a priority'); return; }
-
-            const taskData = {
-                title: document.getElementById('taskTitle').value,
-                category: categories.find(c => c.id === selectedCategory).name,
-                priority: selectedPriority,
-                dueDate: document.getElementById('dueDate').value,
-                description: document.getElementById('taskDescription').value,
-                completed: false
-            };
-
-            // TODO: Connect to backend
-        });
-
-        // Wire customize colors button
-        document.getElementById('customizeColorsBtn').addEventListener('click', toggleColorCustomization);
-
-        // Initial render
-        renderCategories();
-        wirePriorityButtons();
-    </script>
+</body>
+</html>

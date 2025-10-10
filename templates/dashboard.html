@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-content">
+        <div class="sidebar-top">
+          <h3 class="sidebar-title">Categories</h3>
+          <ul class="category-list">
+            <li>
+              <a href="/dashboard?category=all" class="category-link">All Tasks</a>
+            </li>
+            {% for category in categories %}
+            <li>
+              <a href="/dashboard?category={{ category.id }}" class="category-link">{{ category.name }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+
+          <form action="/api/categories" method="POST" class="category-form">
+            <input
+              type="text"
+              name="name"
+              placeholder="New category"
+              class="category-input"
+              required
+            />
+            <button type="submit" class="btn-add-category">Add</button>
+          </form>
+        </div>
+
+        <div class="sidebar-bottom">
+          <p class="user-info">Logged in as <strong>{{ user.username }}</strong></p>
+          <form action="/logout" method="POST">
+            <button type="submit" class="btn-logout">Log out</button>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Task Section -->
+    <section class="main-content">
+      <div class="content-header">
+        <h2 class="page-title">Task Dashboard</h2>
+        <a href="/add-task">
+          <button class="btn-add-task">Add Task</button>
+        </a>
+      </div>
+
+      <table class="task-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            <td>{{ task.title }}</td>
+            <td>{{ task.category }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.priority }}</td>
+            <td class="action-cell">
+              <form method="POST" action="/api/tasks/{{ task.id }}/delete">
+                <button 
+                  type="submit" 
+                  class="btn-delete"
+                  onclick="return confirm('Delete this task?')"
+                >🗑️</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="empty-state">No tasks yet. Click "Add Task" to get started!</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>
+
