@@ -1,0 +1,262 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background-color: #f3f4f6;
+  color: #111827;
+  line-height: 1.6;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: 16rem;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.category-list {
+  list-style: none;
+  margin-bottom: 1.5rem;
+}
+
+.category-list li {
+  margin-bottom: 0.5rem;
+}
+
+.category-link {
+  color: #1f2937;
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.category-link:hover {
+  color: #2563eb;
+  background-color: #f3f4f6;
+}
+
+.category-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.category-input:focus {
+  border-color: #6b7280;
+}
+
+.btn-add-category {
+  width: 100%;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-category:hover {
+  background-color: #1f2937;
+}
+
+.sidebar-bottom {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.user-info {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.user-info strong {
+  color: #111827;
+}
+
+.btn-logout {
+  width: 100%;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+  background-color: #1f2937;
+}
+
+/* Main Content Styles */
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.btn-add-task {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-task:hover {
+  background-color: #1f2937;
+}
+
+/* Table Styles */
+.task-table {
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.task-table thead {
+  background-color: #f3f4f6;
+}
+
+.task-table th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.task-table tbody tr {
+  border-top: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.task-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.task-table td {
+  padding: 1rem;
+  color: #374151;
+}
+
+.action-cell {
+  white-space: nowrap;
+}
+
+.btn-delete {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-delete:hover {
+  transform: scale(1.2);
+}
+
+.empty-state {
+  text-align: center;
+  color: #6b7280;
+  padding: 3rem 1rem !important;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .content-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .btn-add-task {
+    width: 100%;
+  }
+
+  .task-table {
+    font-size: 0.875rem;
+  }
+
+  .task-table th,
+  .task-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
