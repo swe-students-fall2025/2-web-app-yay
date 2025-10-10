@@ -8,7 +8,11 @@ def home():
 
 @app.route('/login')
 def login():
-    return render_template('todo_login.html')
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
 
 @app.route('/add-task')
 def add_task():
