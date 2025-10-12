@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from db import ping
 
 app = Flask(__name__)
 
@@ -43,6 +44,11 @@ def dashboard():
                          user=sample_user, 
                          categories=sample_categories, 
                          tasks=sample_tasks)
+
+@app.get("/test")
+def health():
+    from db import ping
+    return {"status": "ok", "db": "ok" if ping() else "down"}, 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
