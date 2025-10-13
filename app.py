@@ -1,7 +1,21 @@
-from flask import Flask, render_template
-from db import ping
+from flask import Flask, render_template, redirect, url_for, session, g
+from functools import wraps
+from config import settings
+from db import db, ping
+from auth import auth_bp
 
 app = Flask(__name__)
+app.config.from_object(settings)
+
+# register blueprint AFTER app is created
+print(">>> registering auth blueprint")
+app.register_blueprint(auth_bp)
+print(">>> auth blueprint registered")
+
+@app.get("/routes")
+def routes():
+    return {"routes": [rule.rule for rule in app.url_map.iter_rules()]}
+
 
 # Global mock data
 sample_user = {'username': 'JohnDoe'}
