@@ -16,16 +16,24 @@
           <h3 class="sidebar-title">Categories</h3>
           <ul class="category-list">
             <li>
-              <a href="/dashboard?category=all" class="category-link">All Tasks</a>
+                <!--            AAA: 把上面取消注释下面注释起来-->
+<!--              <a href="{{ url_for('dashboard', category='all', user_id=request.args.get('user_id')) }}" class="category-link">All Tasks</a>-->
+              <a href="{{ url_for('dashboard', category='all') }}" class="category-link">All Tasks</a>
             </li>
             {% for category in categories %}
             <li>
-              <a href="/dashboard?category={{ category.id }}" class="category-link">{{ category.name }}</a>
+                <!--            AAA: 把上面取消注释下面注释起来-->
+<!--              <a href="{{ url_for('dashboard', category=category.id, user_id=request.args.get('user_id')) }}" class="category-link">-->
+<!--                {{ category.name }}-->
+<!--              </a>-->
+              <a href="{{ url_for('dashboard', category=category.id) }}" class="category-link">{{ category.name }}</a>
             </li>
             {% endfor %}
           </ul>
 
-          <form action="/api/categories" method="POST" class="category-form">
+                <!--            AAA: 把上面取消注释下面注释起来-->
+<!--          <form action="/api/categories" method="POST" class="category-form">-->
+          <form action="{{ url_for('api_add_category') }}" method="POST" class="category-form">
             <input
               type="text"
               name="name"
@@ -33,6 +41,8 @@
               class="category-input"
               required
             />
+              <!--            AAA: 把下面取消注释-->
+<!--            <input type="hidden" name="user_id" value="{{ request.args.get('user_id') or '' }}">-->
             <button type="submit" class="btn-add-category">Add</button>
           </form>
         </div>
