@@ -15,14 +15,14 @@
     </div>
 
     <!-- Login Form -->
-    <form id="loginForm" class="auth-form">
+    <form class="auth-form" method="POST" action="/api/auth/login">
       <div class="form-group">
-        <label for="loginUsername">Username</label>
-        <input type="text" id="loginUsername" required placeholder="Enter your username">
+        <label for="loginUsername">Email</label>
+        <input type="email" id="loginUsername" name="email" required placeholder="Enter your email">
       </div>
       <div class="form-group">
         <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" required placeholder="Enter your password">
+        <input type="password" id="loginPassword" name="password" required placeholder="Enter your password">
       </div>
       <button type="submit" class="btn-submit">Login</button>
     </form>
@@ -35,6 +35,16 @@
       </p>
     </div>
   </div>
+
+  <script>
+    document.querySelector('form.auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = new URLSearchParams(new FormData(e.target));
+      const res = await fetch('/api/auth/login', { method:'POST', body });
+      if (res.ok) location.href = '/dashboard';
+      else alert(await res.text() || 'Login failed');
+    });
+    </script>
 
 </body>
 </html>
