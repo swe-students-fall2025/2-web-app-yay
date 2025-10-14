@@ -8,10 +8,12 @@ from config import settings
 from auth import auth_bp
 from db import db, ping 
 
+from todo_AddDelete import register_task_routes
 
 app = Flask(__name__)
 app.config.from_object(settings)
 app.register_blueprint(auth_bp)
+register_task_routes(app)
 
 def login_required_view(f):
     """Redirect to /login if not authenticated (for HTML page routes)."""
@@ -76,16 +78,76 @@ def logout_page():
     session.clear()
     return redirect(url_for("home"))
 
-@app.route("/add-task")
+# @app.route("/add-task")
+# @login_required_view
+# def add_task():
+#     return render_template("add_task.html", categories=sample_categories)
+@app.route("/add-task", methods=["GET", "POST"])
 @login_required_view
 def add_task():
-    return render_template("add_task.html", categories=sample_categories)
+    uid = current_uid()
+    if not uid:
+        return redirect(url_for("login"))
+    if request.method == "POST":
+        data = request.form
+        title = (data.get("title") or "").strip()
+        category_id = data.get("category_id")
+        priority = (data.get("priority") or "medium").lower()
+        status = (data.get("status") or "todo").lower()
+        due_date_str = data.get("due_date")
+        description = (data.get("description") or "").strip()
+        
+        if not title:
+            return redirect(url_for("add_task"))
+        cat_id = None
+        if category_id and ObjectId.is_valid(category_id):
+            cat_id = ObjectId(category_id)
+        due_date = None
+        if due_date_str:
+            try:
+                from datetime import datetime
+                due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+            except ValueError:
+                pass
+        priority_map = {"high": 1, "medium": 2, "low": 3}
+        priority_val = priority_map.get(priority, 2)
+        from datetime import datetime
+        now = datetime.utcnow()
+        task_doc = {
+            "user_id": uid,
+            "title": title,
+            "category_id": cat_id,
+            "priority": priority_val,
+            "status": status,
+            "due_date": due_date,
+            "description": description,
+            "created_at": now,
+            "updated_at": now,
+        }
+        
+        db.tasks.insert_one(task_doc)
+        return redirect(url_for("dashboard"), code=303)
+    cats = list(db["categories"].find({"user_id": uid}).sort("name", 1))
+    categories = [{"id": str(c["_id"]), "name": c.get("name", "")} for c in cats]
+    
+    return render_template("add_task.html", categories=categories)
 
+# @app.route("/history")
+# @login_required_view
+# def history():
+#     return render_template("todo_history.html")
 @app.route("/history")
 @login_required_view
 def history():
-    return render_template("todo_history.html")
-
+    uid = current_uid()
+    if not uid:
+        return redirect(url_for("login"))
+    completed_tasks = list(db["tasks"].find({
+        "user_id": uid,
+        "status": "done"
+    }).sort("updated_at", -1))
+    
+    return render_template("todo_history.html", tasks=completed_tasks)
 
 # 解释一下：上面被注释掉的代码都是我原来实现用url取userid的逻辑，下面新的代码都是需要登陆后从user session里面取id。目前全部实现代码我都改成了要求登陆，
 # 如果有问题可以把下面的代码注释了，把上面代码取消注释就可以看我原来的代码实现逻辑。
