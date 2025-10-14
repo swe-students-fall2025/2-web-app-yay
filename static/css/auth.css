@@ -124,6 +124,20 @@ body {
   text-decoration: underline;
 }
 
+/* Error Message Styles */
+.error-message {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
 /* Responsive Design */
 @media (max-width: 640px) {
   .auth-container {
