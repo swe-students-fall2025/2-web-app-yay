@@ -20,13 +20,13 @@
       <div id="error-message" class="error-message" style="display: none;"></div>
       
       <div class="form-group">
-        <label for="loginUsername">Email</label>
-        <input type="email" id="loginUsername" name="email" required placeholder="Enter your email">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="Enter your email">
         <span id="email-error" class="field-error" style="display: none;"></span>
       </div>
       <div class="form-group">
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" name="password" required placeholder="Enter your password">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="Enter your password">
         <span id="password-error" class="field-error" style="display: none;"></span>
       </div>
       <button type="submit" class="btn-submit">Login</button>
@@ -72,7 +72,7 @@
     }
 
     // Real-time validation
-    document.getElementById('loginUsername').addEventListener('blur', function() {
+    document.getElementById('email').addEventListener('blur', function() {
       const email = this.value.trim();
       if (email && !validateEmail(email)) {
         showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
@@ -88,8 +88,8 @@
       errorDiv.style.display = 'none';
       clearAllFieldErrors();
       
-      const email = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value;
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
       
       let hasErrors = false;
       
