@@ -16,17 +16,23 @@
 
     <!-- Register Form -->
     <form method="POST" action="/api/auth/signup" class="auth-form">
+      <!-- Error message container -->
+      <div id="error-message" class="error-message" style="display: none;"></div>
+      
       <div class="form-group">
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required placeholder="Enter your email">
+        <span id="email-error" class="field-error" style="display: none;"></span>
       </div>
       <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" required placeholder="Your name">
+        <span id="name-error" class="field-error" style="display: none;"></span>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required placeholder="Create a password">
+        <span id="password-error" class="field-error" style="display: none;"></span>
       </div>
       <button type="submit" class="btn-submit">Sign Up</button>
     </form>
@@ -41,12 +47,134 @@
   </div>
 
   <script>
+    // Validation functions
+    function validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function validatePassword(password) {
+      return password.length >= 6 && /[A-Z]/.test(password);
+    }
+
+
+    function showFieldError(fieldId, message) {
+      const errorSpan = document.getElementById(fieldId + '-error');
+      const input = document.getElementById(fieldId);
+      errorSpan.textContent = message;
+      errorSpan.style.display = 'block';
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+    }
+
+    function clearFieldError(fieldId) {
+      const errorSpan = document.getElementById(fieldId + '-error');
+      const input = document.getElementById(fieldId);
+      errorSpan.style.display = 'none';
+      input.classList.remove('invalid');
+      input.classList.add('valid');
+    }
+
+    function clearAllFieldErrors() {
+      ['email', 'name', 'password'].forEach(fieldId => {
+        clearFieldError(fieldId);
+      });
+    }
+
+    // Real-time validation
+    document.getElementById('email').addEventListener('blur', function() {
+      const email = this.value.trim();
+      if (email && !validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
+      } else if (email) {
+        clearFieldError('email');
+      }
+    });
+
+    document.getElementById('name').addEventListener('blur', function() {
+      const name = this.value.trim();
+      if (name) {
+        clearFieldError('name');
+      }
+    });
+
+    document.getElementById('password').addEventListener('blur', function() {
+      const password = this.value;
+      if (password && !validatePassword(password)) {
+        showFieldError('password', 'Password must be at least 6 characters and contain a capital letter');
+      } else if (password) {
+        clearFieldError('password');
+      }
+    });
+
+    // Form submission
     document.querySelector('form.auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const body = new URLSearchParams(new FormData(e.target));
-      const res = await fetch('/api/auth/signup', { method: 'POST', body });
-      if (res.ok) location.href = '/dashboard';
-      else alert(await res.text() || 'Sign up failed');
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.style.display = 'none';
+      clearAllFieldErrors();
+      
+      const email = document.getElementById('email').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const password = document.getElementById('password').value;
+      
+      let hasErrors = false;
+      
+      // Validate email
+      if (!email) {
+        showFieldError('email', 'Email is required');
+        hasErrors = true;
+      } else if (!validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
+        hasErrors = true;
+      }
+      
+      // Validate name
+      if (!name) {
+        showFieldError('name', 'Name is required');
+        hasErrors = true;
+      }
+      
+      // Validate password
+      if (!password) {
+        showFieldError('password', 'Password is required');
+        hasErrors = true;
+      } else if (!validatePassword(password)) {
+        showFieldError('password', 'Password must be at least 6 characters and contain a capital letter');
+        hasErrors = true;
+      }
+      
+      if (hasErrors) {
+        return;
+      }
+      
+      try {
+        const body = new URLSearchParams(new FormData(e.target));
+        const res = await fetch('/api/auth/signup', { method: 'POST', body });
+        
+        if (res.ok) {
+          location.href = '/dashboard';
+        } else {
+          const data = await res.json();
+          let errorText = 'Sign up failed';
+          
+          // Handle specific error messages
+          if (data.error === 'email already registered') {
+            errorText = 'Email already registered. Please go to login.';
+          } else if (data.error === 'email and password are required') {
+            errorText = 'Please fill in all required fields.';
+          } else if (data.error) {
+            errorText = data.error;
+          }
+          
+          errorDiv.textContent = errorText;
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Signup error:', error);
+        errorDiv.textContent = 'Something went wrong. Please try again.';
+        errorDiv.style.display = 'block';
+      }
     });
     </script>
 

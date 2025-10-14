@@ -16,13 +16,18 @@
 
     <!-- Login Form -->
     <form class="auth-form" method="POST" action="/api/auth/login">
+      <!-- Error message container -->
+      <div id="error-message" class="error-message" style="display: none;"></div>
+      
       <div class="form-group">
-        <label for="loginUsername">Email</label>
-        <input type="email" id="loginUsername" name="email" required placeholder="Enter your email">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="Enter your email">
+        <span id="email-error" class="field-error" style="display: none;"></span>
       </div>
       <div class="form-group">
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" name="password" required placeholder="Enter your password">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="Enter your password">
+        <span id="password-error" class="field-error" style="display: none;"></span>
       </div>
       <button type="submit" class="btn-submit">Login</button>
     </form>
@@ -37,12 +42,103 @@
   </div>
 
   <script>
+    // Validation functions
+    function validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function showFieldError(fieldId, message) {
+      const errorSpan = document.getElementById(fieldId + '-error');
+      const input = document.getElementById(fieldId);
+      errorSpan.textContent = message;
+      errorSpan.style.display = 'block';
+      input.classList.add('invalid');
+      input.classList.remove('valid');
+    }
+
+    function clearFieldError(fieldId) {
+      const errorSpan = document.getElementById(fieldId + '-error');
+      const input = document.getElementById(fieldId);
+      errorSpan.style.display = 'none';
+      input.classList.remove('invalid');
+      input.classList.add('valid');
+    }
+
+    function clearAllFieldErrors() {
+      ['email', 'password'].forEach(fieldId => {
+        clearFieldError(fieldId);
+      });
+    }
+
+    // Real-time validation
+    document.getElementById('email').addEventListener('blur', function() {
+      const email = this.value.trim();
+      if (email && !validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
+      } else if (email) {
+        clearFieldError('email');
+      }
+    });
+
+    // Form submission
     document.querySelector('form.auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const body = new URLSearchParams(new FormData(e.target));
-      const res = await fetch('/api/auth/login', { method:'POST', body });
-      if (res.ok) location.href = '/dashboard';
-      else alert(await res.text() || 'Login failed');
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.style.display = 'none';
+      clearAllFieldErrors();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      let hasErrors = false;
+      
+      // Validate email
+      if (!email) {
+        showFieldError('email', 'Email is required');
+        hasErrors = true;
+      } else if (!validateEmail(email)) {
+        showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
+        hasErrors = true;
+      }
+      
+      // Validate password
+      if (!password) {
+        showFieldError('password', 'Password is required');
+        hasErrors = true;
+      }
+      
+      if (hasErrors) {
+        return;
+      }
+      
+      try {
+        const body = new URLSearchParams(new FormData(e.target));
+        const res = await fetch('/api/auth/login', { method:'POST', body });
+        
+        if (res.ok) {
+          location.href = '/dashboard';
+        } else {
+          const data = await res.json();
+          let errorText = 'Login failed';
+          
+          // Handle specific error messages
+          if (data.error === 'invalid email or password') {
+            errorText = 'Invalid email or password. Please try again.';
+          } else if (data.error === 'unauthorized') {
+            errorText = 'Please log in to continue.';
+          } else if (data.error) {
+            errorText = data.error;
+          }
+          
+          errorDiv.textContent = errorText;
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'Something went wrong. Please try again.';
+        errorDiv.style.display = 'block';
+      }
     });
     </script>
 
