@@ -247,7 +247,7 @@ body {
 
 /* FAQ Section */
 .faq {
-  padding: 100px 0;
+  padding: 100px 0 30px 0;
   background-color: #fff;
 }
 
@@ -283,6 +283,12 @@ body {
 .faq-item p {
   color: #666;
   line-height: 1.6;
+}
+
+.cta-section {
+  background-color: #fff;
+  padding: 70px 0;
+  text-align: center;
 }
 
 /* Footer */
