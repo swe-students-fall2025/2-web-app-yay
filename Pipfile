@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "==3.1.2"
+flask-login = "==0.6.3"
+pymongo = "==4.15.3"
+python-dotenv = "==1.1.1"
+certifi = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
