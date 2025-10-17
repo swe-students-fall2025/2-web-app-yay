@@ -73,7 +73,7 @@ def login():
 def signup():
     return render_template("signup.html")
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET", "POST"])
 def logout_page():
     session.clear()
     return redirect(url_for("home"))
