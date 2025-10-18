@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task - To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/add-task.css') }}">
+</head>
+<body>
+    
+    <div class="ticket-container">
+        
+        <div class="ticket-header">
+            <a href="/dashboard" class="back-button">
+                <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <h1 class="ticket-title">Edit Task</h1>
+        </div>
+
+        <div class="ticket-content">
+            <form method="POST" action="/edit-task/{{ task.id }}" class="task-form">
+            
+            <!-- Task Title -->
+            <div class="form-section">
+                <label class="form-label">Task Title *</label>
+                <input type="text" name="title" required class="form-input" placeholder="What needs to be done?" value="{{ task.title }}">
+            </div>
+
+            <!-- Category Selection -->
+            <div class="form-section">
+                <label class="form-label form-label-lg">Category *</label>
+                <select name="category_id" required class="form-select">
+                    <option value="">Select a category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == task.category_id %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Priority Selection -->
+            <div class="form-section">
+                <label class="form-label form-label-lg">Priority *</label>
+                <div class="priority-grid">
+                    <label class="priority-label">
+                        <input type="radio" name="priority" value="high" required class="priority-input" {% if task.priority == 'High' %}checked{% endif %}>
+                        <div class="priority-box priority-high">🔴 High</div>
+                    </label>
+                    <label class="priority-label">
+                        <input type="radio" name="priority" value="medium" required class="priority-input" {% if task.priority == 'Medium' %}checked{% endif %}>
+                        <div class="priority-box priority-medium">🟡 Medium</div>
+                    </label>
+                    <label class="priority-label">
+                        <input type="radio" name="priority" value="low" required class="priority-input" {% if task.priority == 'Low' %}checked{% endif %}>
+                        <div class="priority-box priority-low">🟢 Low</div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Status Selection -->
+            <div class="form-section">
+                <label class="form-label form-label-lg">Status *</label>
+                <select name="status" required class="form-select">
+                    <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+                    <option value="in-progress" {% if task.status == 'in-progress' %}selected{% endif %}>In Progress</option>
+                    <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+                </select>
+            </div>
+
+            <!-- Due Date -->
+            <div class="form-section">
+                <label class="form-label">Due Date *</label>
+                <input type="date" name="due_date" required class="form-input" value="{{ task.due_date }}">
+            </div>
+
+            <!-- Description (Optional) -->
+            <div class="form-section">
+                <label class="form-label">Description (Optional)</label>
+                <textarea name="description" rows="4" class="form-textarea" placeholder="Add any additional details...">{{ task.description }}</textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <a href="/dashboard" class="btn btn-cancel">Cancel</a>
+                <button type="submit" class="btn btn-submit">Update Task</button>
+            </div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>
+

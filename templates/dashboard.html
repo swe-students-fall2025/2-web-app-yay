@@ -65,6 +65,31 @@
         </a>
       </div>
 
+      <!-- Notifications Section -->
+      {% if upcoming_deadlines %}
+      <div class="notifications-section">
+        <h3 class="notifications-title">📅 Upcoming Deadlines</h3>
+        <div class="notifications-list">
+          {% for deadline in upcoming_deadlines %}
+          <div class="notification-card priority-{{ deadline.priority|lower }}">
+            <div class="notification-content">
+              <span class="notification-task">{{ deadline.title }}</span>
+              <span class="notification-countdown">
+                {% if deadline.days_left == 0 %}
+                  <strong>Due Today!</strong>
+                {% elif deadline.days_left == 1 %}
+                  <strong>1 day left</strong>
+                {% else %}
+                  <strong>{{ deadline.days_left }} days left</strong>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <table class="task-table">
         <thead>
           <tr>
@@ -72,7 +97,7 @@
             <th>Category</th>
             <th>Status</th>
             <th>Priority</th>
-            <th>Delete</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -83,7 +108,8 @@
             <td>{{ task.status }}</td>
             <td>{{ task.priority }}</td>
             <td class="action-cell">
-              <form method="POST" action="/api/tasks/{{ task.id }}/delete">
+              <a href="/edit-task/{{ task.id }}" class="btn-edit">✏️</a>
+              <form method="POST" action="/api/tasks/{{ task.id }}/delete" style="display: inline;">
                 <button 
                   type="submit" 
                   class="btn-delete"
