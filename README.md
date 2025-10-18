@@ -27,4 +27,4 @@ Our vision is to create a simple, user-friendly to-do list web application that 
    ```
 ## Task boards
 
-See instructions. Delete this line and place a link to the task boards here.
+Sprint 1: https://github.com/orgs/swe-students-fall2025/projects/13
