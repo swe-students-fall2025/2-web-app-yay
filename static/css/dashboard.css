@@ -218,10 +218,40 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
+}
+
+.btn-sort-priority {
+  background-color: #3b82f6;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.btn-sort-priority:hover {
+  background-color: #2563eb;
+}
+
+.btn-sort-priority.active {
+  background-color: #059669;
+}
+
+.btn-sort-priority.active:hover {
+  background-color: #047857;
 }
 
 .btn-add-task {
@@ -335,6 +365,13 @@ body {
     align-items: flex-start;
   }
 
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-sort-priority,
   .btn-add-task {
     width: 100%;
   }
