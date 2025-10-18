@@ -136,6 +136,83 @@ def add_task():
 # @login_required_view
 # def history():
 #     return render_template("todo_history.html")
+@app.route("/edit-task/<task_id>", methods=["GET", "POST"])
+@login_required_view
+def edit_task(task_id):
+    uid = current_uid()
+    if not uid:
+        return redirect(url_for("login"))
+    
+    if not ObjectId.is_valid(task_id):
+        return redirect(url_for("dashboard"))
+    
+    task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": uid})
+    if not task:
+        return redirect(url_for("dashboard"))
+    
+    if request.method == "POST":
+        data = request.form
+        title = (data.get("title") or "").strip()
+        category_id = data.get("category_id")
+        priority = (data.get("priority") or "medium").lower()
+        status = (data.get("status") or "todo").lower()
+        due_date_str = data.get("due_date")
+        description = (data.get("description") or "").strip()
+        
+        if not title:
+            return redirect(url_for("edit_task", task_id=task_id))
+        
+        cat_id = None
+        if category_id and ObjectId.is_valid(category_id):
+            cat_id = ObjectId(category_id)
+        
+        due_date = None
+        if due_date_str:
+            try:
+                from datetime import datetime
+                due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+            except ValueError:
+                pass
+        
+        priority_map = {"high": 1, "medium": 2, "low": 3}
+        priority_val = priority_map.get(priority, 2)
+        
+        from datetime import datetime
+        db.tasks.update_one(
+            {"_id": ObjectId(task_id)},
+            {"$set": {
+                "title": title,
+                "category_id": cat_id,
+                "priority": priority_val,
+                "status": status,
+                "due_date": due_date,
+                "description": description,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        return redirect(url_for("dashboard"), code=303)
+    
+    # GET request - show edit form
+    cats = list(db["categories"].find({"user_id": uid}).sort("name", 1))
+    categories = [{"id": str(c["_id"]), "name": c.get("name", "")} for c in cats]
+    
+    def pri_to_text(p):
+        if isinstance(p, str): return p
+        return {1: "High", 2: "Medium", 3: "Low"}.get(p, "Medium")
+    
+    # Format task data for template
+    task_data = {
+        "id": str(task["_id"]),
+        "title": task.get("title", ""),
+        "category_id": str(task.get("category_id", "")),
+        "priority": pri_to_text(task.get("priority", "Medium")),
+        "status": task.get("status", "todo"),
+        "due_date": task.get("due_date").strftime("%Y-%m-%d") if task.get("due_date") else "",
+        "description": task.get("description", "")
+    }
+    
+    return render_template("edit_task.html", task=task_data, categories=categories)
+
 @app.route("/history")
 @login_required_view
 def history():
@@ -239,6 +316,8 @@ def dashboard():
         return {1: "High", 2: "Medium", 3: "Low"}.get(p, "Medium")
 
     tasks = []
+    upcoming_deadlines = []  # For notification section
+    
     for t in tasks_cur:
         cname = cat_map.get(t.get("category_id")) or t.get("category", "")
         tasks.append({
@@ -248,10 +327,28 @@ def dashboard():
             "status": t.get("status", "Pending"),
             "priority": pri_to_text(t.get("priority", "Medium")),
         })
+        
+        # Calculate days until deadline for upcoming tasks
+        if t.get("due_date") and t.get("status") != "done":
+            from datetime import datetime
+            due_date = t.get("due_date")
+            today = datetime.utcnow()
+            days_left = (due_date - today).days
+            
+            # Only show tasks due within 7 days
+            if days_left >= 0 and days_left <= 7:
+                upcoming_deadlines.append({
+                    "title": t.get("title", ""),
+                    "days_left": days_left,
+                    "priority": pri_to_text(t.get("priority", "Medium"))
+                })
+    
+    # Sort by days_left (most urgent first)
+    upcoming_deadlines.sort(key=lambda x: x["days_left"])
 
     user = {"username": getattr(current_user, "username", "User")}
 
-    return render_template("dashboard.html", user=user, categories=categories, tasks=tasks)
+    return render_template("dashboard.html", user=user, categories=categories, tasks=tasks, upcoming_deadlines=upcoming_deadlines)
 
 # AAA: 把上面取消注释下面注释起来
 # @app.post("/api/categories")
