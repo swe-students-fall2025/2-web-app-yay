@@ -254,6 +254,30 @@ body {
   background-color: #047857;
 }
 
+.btn-sort-due-date {
+  background-color: #8b5cf6;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.btn-sort-due-date:hover {
+  background-color: #7c3aed;
+}
+
+.btn-sort-due-date.active {
+  background-color: #059669;
+}
+
+.btn-sort-due-date.active:hover {
+  background-color: #047857;
+}
+
 .btn-add-task {
   background-color: #000000;
   color: #ffffff;
@@ -372,6 +396,7 @@ body {
   }
 
   .btn-sort-priority,
+  .btn-sort-due-date,
   .btn-add-task {
     width: 100%;
   }

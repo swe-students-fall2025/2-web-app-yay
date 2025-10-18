@@ -66,6 +66,11 @@
           {% else %}
             <button class="btn-sort-priority" onclick="sortByPriority()">📅 Sort by Priority</button>
           {% endif %}
+          {% if request.args.get('sort') == 'due_date' %}
+            <button class="btn-sort-due-date active" onclick="clearSort()">📆 Sorted by Due Date</button>
+          {% else %}
+            <button class="btn-sort-due-date" onclick="sortByDueDate()">📆 Sort by Due Date</button>
+          {% endif %}
           <a href="/add-task">
             <button class="btn-add-task">Add Task</button>
           </a>
@@ -139,24 +144,29 @@
 
   <script>
     function sortByPriority() {
+      const urlParams = new URLSearchParams(window.location.search);
+    
+      urlParams.set('sort', 'priority');
+  
+      window.location.href = `/dashboard?${urlParams.toString()}`;
+    }
+    
+    function sortByDueDate() {
       // Get current URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       
       // Add sort parameter to URL (preserves existing category parameter)
-      urlParams.set('sort', 'priority');
+      urlParams.set('sort', 'due_date');
       
       // Redirect to dashboard with sort parameter
       window.location.href = `/dashboard?${urlParams.toString()}`;
     }
     
     function clearSort() {
-      // Get current URL parameters
+
       const urlParams = new URLSearchParams(window.location.search);
-      
-      // Remove sort parameter
+    
       urlParams.delete('sort');
-      
-      // Redirect to dashboard without sort parameter
       window.location.href = `/dashboard?${urlParams.toString()}`;
     }
   </script>

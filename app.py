@@ -317,6 +317,12 @@ def dashboard():
             ("priority", 1),  # Priority ascending (high=1 first)
             ("due_date", 1)   # Due date ascending (closer dates first)
         ])
+    elif sort_type == 'due_date':
+        # Sort by due_date (closer first), then by priority
+        tasks_cur = db["tasks"].find(q).sort([
+            ("due_date", 1),  # Due date ascending (closer dates first)
+            ("priority", 1)   # Priority ascending (high=1 first)
+        ])
     else:
         # Default sorting by updated_at
         tasks_cur = db["tasks"].find(q).sort("updated_at", -1)
