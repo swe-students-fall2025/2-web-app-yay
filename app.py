@@ -419,7 +419,7 @@ def dashboard():
     # Sort by days_left (most urgent first)
     upcoming_deadlines.sort(key=lambda x: x["days_left"])
 
-    user = {"username": getattr(current_user, "username", "User")}
+    user = {"username": g.current_user.get("name", "User") if g.current_user else "User"}
 
     return render_template("dashboard.html", user=user, categories=categories, tasks=tasks, upcoming_deadlines=upcoming_deadlines, search_query=search_query)
 
