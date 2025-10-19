@@ -28,3 +28,4 @@ Our vision is to create a simple, user-friendly to-do list web application that 
 ## Task boards
 
 Sprint 1: https://github.com/orgs/swe-students-fall2025/projects/13
+Sprint 2: https://github.com/orgs/swe-students-fall2025/projects/50
