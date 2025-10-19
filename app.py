@@ -293,6 +293,7 @@ def dashboard():
     uid = current_uid()
 
     category = request.args.get('category', 'all')
+    sort_type = request.args.get('sort', 'default')
 
     cat_query = {"user_id": uid} if uid else {}
     cats = list(db["categories"].find(cat_query).sort("name", 1))
@@ -309,7 +310,22 @@ def dashboard():
             if found:
                 q["category_id"] = found["_id"]
 
-    tasks_cur = db["tasks"].find(q).sort("updated_at", -1)
+    # Determine sorting based on sort_type parameter
+    if sort_type == 'priority':
+        # Sort by priority (1=high, 2=medium, 3=low) then by due_date (closer first)
+        tasks_cur = db["tasks"].find(q).sort([
+            ("priority", 1),  # Priority ascending (high=1 first)
+            ("due_date", 1)   # Due date ascending (closer dates first)
+        ])
+    elif sort_type == 'due_date':
+        # Sort by due_date (closer first), then by priority
+        tasks_cur = db["tasks"].find(q).sort([
+            ("due_date", 1),  # Due date ascending (closer dates first)
+            ("priority", 1)   # Priority ascending (high=1 first)
+        ])
+    else:
+        # Default sorting by updated_at
+        tasks_cur = db["tasks"].find(q).sort("updated_at", -1)
 
     def pri_to_text(p):
         if isinstance(p, str): return p
@@ -320,12 +336,16 @@ def dashboard():
     
     for t in tasks_cur:
         cname = cat_map.get(t.get("category_id")) or t.get("category", "")
+        due_date = t.get("due_date")
+        due_date_str = due_date.strftime("%Y-%m-%d") if due_date else None
+        
         tasks.append({
             "id": str(t["_id"]),
             "title": t.get("title", ""),
             "category": cname,
             "status": t.get("status", "Pending"),
             "priority": pri_to_text(t.get("priority", "Medium")),
+            "due_date": due_date_str,
         })
         
         # Calculate days until deadline for upcoming tasks

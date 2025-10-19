@@ -60,9 +60,21 @@
     <section class="main-content">
       <div class="content-header">
         <h2 class="page-title">Task Dashboard</h2>
-        <a href="/add-task">
-          <button class="btn-add-task">Add Task</button>
-        </a>
+        <div class="header-actions">
+          {% if request.args.get('sort') == 'priority' %}
+            <button class="btn-sort-priority active" onclick="clearSort()">📅 Sorted by Priority</button>
+          {% else %}
+            <button class="btn-sort-priority" onclick="sortByPriority()">📅 Sort by Priority</button>
+          {% endif %}
+          {% if request.args.get('sort') == 'due_date' %}
+            <button class="btn-sort-due-date active" onclick="clearSort()">📆 Sorted by Due Date</button>
+          {% else %}
+            <button class="btn-sort-due-date" onclick="sortByDueDate()">📆 Sort by Due Date</button>
+          {% endif %}
+          <a href="/add-task">
+            <button class="btn-add-task">Add Task</button>
+          </a>
+        </div>
       </div>
 
       <!-- Notifications Section -->
@@ -97,6 +109,7 @@
             <th>Category</th>
             <th>Status</th>
             <th>Priority</th>
+            <th>Due Date</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -107,6 +120,7 @@
             <td>{{ task.category }}</td>
             <td>{{ task.status }}</td>
             <td>{{ task.priority }}</td>
+            <td>{{ task.due_date or 'No due date' }}</td>
             <td class="action-cell">
               <a href="/edit-task/{{ task.id }}" class="btn-edit">✏️</a>
               <form method="POST" action="/api/tasks/{{ task.id }}/delete" style="display: inline;">
@@ -120,13 +134,42 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="empty-state">No tasks yet. Click "Add Task" to get started!</td>
+            <td colspan="6" class="empty-state">No tasks yet. Click "Add Task" to get started!</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </section>
   </div>
+
+  <script>
+    function sortByPriority() {
+      const urlParams = new URLSearchParams(window.location.search);
+    
+      urlParams.set('sort', 'priority');
+  
+      window.location.href = `/dashboard?${urlParams.toString()}`;
+    }
+    
+    function sortByDueDate() {
+      // Get current URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // Add sort parameter to URL (preserves existing category parameter)
+      urlParams.set('sort', 'due_date');
+      
+      // Redirect to dashboard with sort parameter
+      window.location.href = `/dashboard?${urlParams.toString()}`;
+    }
+    
+    function clearSort() {
+
+      const urlParams = new URLSearchParams(window.location.search);
+    
+      urlParams.delete('sort');
+      window.location.href = `/dashboard?${urlParams.toString()}`;
+    }
+  </script>
 </body>
 </html>
 
