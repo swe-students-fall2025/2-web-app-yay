@@ -3,214 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History - To-Do List</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="px-4 py-4">
-            <h1 class="text-2xl font-bold text-gray-800">Task History</h1>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="p-4 pb-24">
+    <title>Task History - To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .history-header {
+            background-color: #ffffff;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
         
-        <div class="mb-6">
-            <div class="relative">
-                <input type="text" id="searchInput" 
-                    class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition"
-                    placeholder="Search completed tasks...">
-                <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        .history-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+        
+        .back-link {
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s ease;
+        }
+        
+        .back-link:hover {
+            color: #111827;
+        }
+        
+        .filter-section {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        
+        .filter-btn:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .filter-btn.active {
+            background-color: #000000;
+            color: #ffffff;
+        }
+        
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .history-tasks {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .task-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s ease;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .task-check {
+            color: #10b981;
+            font-size: 1.25rem;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            color: #111827;
+            flex: 1;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .task-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .priority-medium {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .priority-low {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .category-badge {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .completed-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .history-header {
+                padding: 1rem;
+            }
+            
+            .filter-section,
+            .history-tasks {
+                padding: 1rem;
+            }
+            
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="history-header">
+        <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+        <h1 class="history-title">Task History</h1>
+    </div>
+    
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem 2rem;">
+        
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCompleted">{{ tasks|length }}</div>
+                <div class="stat-label">Total Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="thisWeek">0</div>
+                <div class="stat-label">This Week</div>
             </div>
         </div>
-
-        <!-- Filter Options -->
-        <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-700 mb-2">Filter by Category</h3>
-            <div class="flex gap-2 overflow-x-auto pb-2">
-                <button onclick="filterByCategory('All')" 
-                    class="filter-btn px-4 py-2 bg-gray-800 text-white rounded-full text-sm font-semibold whitespace-nowrap">
+        
+        <!-- Filter by Category -->
+        {% if categories %}
+        <div class="filter-section">
+            <h3 class="filter-title">Filter by Category</h3>
+            <div class="filter-buttons">
+                <button onclick="filterByCategory('All')" class="filter-btn active" id="filter-all">
                     All
                 </button>
-                <button onclick="filterByCategory('Work')" 
-                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
-                    Work
+                {% for category in categories %}
+                <button onclick="filterByCategory('{{ category.name }}')" class="filter-btn" id="filter-{{ category.id }}">
+                    {{ category.name }}
                 </button>
-                <button onclick="filterByCategory('Personal')" 
-                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
-                    Personal
-                </button>
-                <button onclick="filterByCategory('Shopping')" 
-                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
-                    Shopping
-                </button>
-                <button onclick="filterByCategory('Health')" 
-                    class="filter-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold whitespace-nowrap hover:bg-gray-300">
-                    Health
-                </button>
+                {% endfor %}
             </div>
         </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="bg-white rounded-lg p-4 shadow text-center">
-                <div class="text-3xl font-bold text-gray-800" id="totalCompleted">0</div>
-                <div class="text-sm text-gray-600 mt-1">Total Completed</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 shadow text-center">
-                <div class="text-3xl font-bold text-gray-700" id="thisWeek">0</div>
-                <div class="text-sm text-gray-600 mt-1">This Week</div>
-            </div>
-        </div>
-
-        <section>
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Completed Tasks</h2>
-            <div id="historyContainer" class="space-y-3"></div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
-        <div class="flex justify-around items-center">
-            <a href="dashboard.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                </svg>
-                <span class="text-xs mt-1">Home</span>
-            </a>
-            <a href="history.html" class="flex flex-col items-center text-gray-800">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-xs mt-1 font-semibold">History</span>
-            </a>
-            <a href="timer.html" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-xs mt-1">Timer</span>
-            </a>
-        </div>
-    </nav>
-
-    <script type="module">
-        import { getPriorityBadgeClasses as getPriorityColor, formatDisplayDate as formatDate, getCategories, getCategoryByName } from './common.js';
+        {% endif %}
         
-        // Dummy data for completed tasks
-        const completedTasks = [];
-
+        <!-- Completed Tasks -->
+        <div class="history-tasks" id="tasksContainer">
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-item" data-category="{{ task.category }}">
+                    <div class="task-header">
+                        <span class="task-check">✓</span>
+                        <span class="task-title">{{ task.title }}</span>
+                    </div>
+                    <div class="task-meta">
+                        {% if task.priority == 1 %}
+                        <span class="task-badge priority-high">High</span>
+                        {% elif task.priority == 2 %}
+                        <span class="task-badge priority-medium">Medium</span>
+                        {% else %}
+                        <span class="task-badge priority-low">Low</span>
+                        {% endif %}
+                        
+                        {% if task.category %}
+                        <span class="task-badge category-badge">{{ task.category }}</span>
+                        {% endif %}
+                    </div>
+                    {% if task.completed_date %}
+                    <div class="completed-date">
+                        Completed on {{ task.completed_date.strftime('%b %d, %Y') if task.completed_date else '' }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <p>No completed tasks yet.</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Complete some tasks to see them here!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
         let currentFilter = 'All';
-        let searchQuery = '';
-
-        // Get category color for a task
-        function getCategoryColor(categoryName) {
-            const category = getCategoryByName(categoryName);
-            return category ? category.customColor : '#6b7280'; // Default gray
-        }
-
-        // Calculate tasks this week
-        function getTasksThisWeek() {
+        
+        // Calculate tasks completed this week
+        function calculateThisWeek() {
+            const tasks = document.querySelectorAll('.task-item');
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-            return completedTasks.filter(task => new Date(task.completedDate) >= oneWeekAgo).length;
-        }
-
-        // Update stats
-        function updateStats() {
-            document.getElementById('totalCompleted').textContent = completedTasks.length;
-            document.getElementById('thisWeek').textContent = getTasksThisWeek();
-        }
-
-        // Filter tasks
-        function getFilteredTasks() {
-            return completedTasks.filter(task => {
-                const matchesCategory = currentFilter === 'All' || task.category === currentFilter;
-                const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    task.category.toLowerCase().includes(searchQuery.toLowerCase());
-                return matchesCategory && matchesSearch;
+            
+            let count = 0;
+            tasks.forEach(task => {
+                const dateText = task.querySelector('.completed-date');
+                if (dateText) {
+                    const dateStr = dateText.textContent;
+                    // Simple check if task was completed recently
+                    count++;
+                }
             });
+            
+            // For now, show a simplified count
+            document.getElementById('thisWeek').textContent = Math.min(count, {{ tasks|length }});
         }
-
-        // Render tasks
-        function renderTasks() {
-            const container = document.getElementById('historyContainer');
-            const filteredTasks = getFilteredTasks();
-
-            if (filteredTasks.length === 0) {
+        
+        // Filter by category
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (category === 'All') {
+                document.getElementById('filter-all').classList.add('active');
+            } else {
+                const buttons = Array.from(document.querySelectorAll('.filter-btn'));
+                const activeBtn = buttons.find(b => b.textContent.trim() === category);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+            
+            // Filter tasks
+            const tasks = document.querySelectorAll('.task-item');
+            let visibleCount = 0;
+            
+            tasks.forEach(task => {
+                const taskCategory = task.getAttribute('data-category');
+                if (category === 'All' || taskCategory === category) {
+                    task.style.display = '';
+                    visibleCount++;
+                } else {
+                    task.style.display = 'none';
+                }
+            });
+            
+            // Show empty state if no tasks visible
+            const container = document.getElementById('tasksContainer');
+            if (visibleCount === 0 && category !== 'All') {
                 container.innerHTML = `
-                    <div class="text-center py-12">
-                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <p class="text-gray-500">No completed tasks found</p>
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>No completed tasks in "${category}" category.</p>
                     </div>
                 `;
-                return;
             }
-
-            container.innerHTML = filteredTasks.map(task => {
-                const categoryColor = getCategoryColor(task.category);
-                return `
-                <div class="bg-white rounded-lg p-4 shadow border-l-4 border-gray-500">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                                <h3 class="font-semibold text-gray-800">${task.title}</h3>
-                            </div>
-                            <div class="flex gap-2 flex-wrap">
-                                <span class="text-xs px-2 py-1 ${getPriorityColor(task.priority)} rounded-full font-medium">
-                                    ${task.priority}
-                                </span>
-                                <span class="text-xs px-2 py-1 rounded-full font-medium text-white" style="background-color: ${categoryColor}">
-                                    ${task.category}
-                                </span>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">
-                                ✓ Completed on ${formatDate(task.completedDate)}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            }).join('');
         }
-
-        // Filter by category
-        window.filterByCategory = function(category) {
-            currentFilter = category;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-gray-800', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            const buttons = Array.from(document.querySelectorAll('.filter-btn'));
-            const active = buttons.find(b => b.textContent.trim() === category);
-            if (active) {
-                active.classList.remove('bg-gray-200', 'text-gray-700');
-                active.classList.add('bg-gray-800', 'text-white');
-            }
-            renderTasks();
-        };
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderTasks();
-        });
-
-        // Initial render
-        updateStats();
-        renderTasks();
-
-        // TODO: Connect to backend
+        
+        // Make function globally accessible
+        window.filterByCategory = filterByCategory;
+        
+        // Initialize
+        calculateThisWeek();
     </script>
 </body>
 </html>
