@@ -132,6 +132,28 @@ def add_task():
     
     return render_template("add_task.html", categories=categories)
 
+@app.route("/tasks/<task_id>/complete", methods=["POST"])
+@login_required_view
+def complete_task(task_id):
+    uid = current_uid()
+    if not uid:
+        return redirect(url_for("login"))
+    
+    if not ObjectId.is_valid(task_id):
+        return redirect(url_for("dashboard"))
+    
+    from datetime import datetime
+    db.tasks.update_one(
+        {"_id": ObjectId(task_id), "user_id": uid},
+        {"$set": {
+            "status": "done",
+            "completed_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }}
+    )
+    
+    return redirect(url_for("dashboard"))
+
 # @app.route("/history")
 # @login_required_view
 # def history():
@@ -219,12 +241,31 @@ def history():
     uid = current_uid()
     if not uid:
         return redirect(url_for("login"))
-    completed_tasks = list(db["tasks"].find({
+    
+    # Get user's categories
+    cats = list(db["categories"].find({"user_id": uid}).sort("name", 1))
+    categories = [{"id": str(c["_id"]), "name": c.get("name", "")} for c in cats]
+    cat_map = {c["_id"]: c.get("name", "") for c in cats}
+    
+    # Get completed tasks
+    completed_tasks_raw = list(db["tasks"].find({
         "user_id": uid,
         "status": "done"
     }).sort("updated_at", -1))
     
-    return render_template("todo_history.html", tasks=completed_tasks)
+    # Add category names to tasks
+    completed_tasks = []
+    for t in completed_tasks_raw:
+        cname = cat_map.get(t.get("category_id"), "")
+        completed_tasks.append({
+            "id": str(t["_id"]),
+            "title": t.get("title", ""),
+            "category": cname,
+            "priority": t.get("priority", 2),
+            "completed_date": t.get("updated_at", "")
+        })
+    
+    return render_template("todo_history.html", tasks=completed_tasks, categories=categories)
 
 # 解释一下：上面被注释掉的代码都是我原来实现用url取userid的逻辑，下面新的代码都是需要登陆后从user session里面取id。目前全部实现代码我都改成了要求登陆，
 # 如果有问题可以把下面的代码注释了，把上面代码取消注释就可以看我原来的代码实现逻辑。
@@ -302,6 +343,9 @@ def dashboard():
     cat_map = {c["_id"]: c.get("name", "") for c in cats}
 
     q = {"user_id": uid} if uid else {}
+    
+    # Exclude completed tasks from dashboard (they should only appear in history)
+    q["status"] = {"$ne": "done"}
 
     if category and category != "all":
         if ObjectId.is_valid(category):

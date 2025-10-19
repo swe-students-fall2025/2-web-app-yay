@@ -378,6 +378,22 @@ body {
   background-color: #1f2937;
 }
 
+.btn-view-history {
+  background-color: #4b5563;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.btn-view-history:hover {
+  background-color: #374151;
+}
+
 /* Table Styles */
 .task-table {
   width: 100%;
@@ -417,6 +433,23 @@ body {
 
 .action-cell {
   white-space: nowrap;
+}
+
+.btn-complete {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-right: 0.5rem;
+  transition: all 0.2s ease;
+  color: #10b981;
+  font-weight: bold;
+}
+
+.btn-complete:hover {
+  transform: scale(1.3);
+  color: #059669;
 }
 
 .btn-edit {
@@ -495,8 +528,11 @@ body {
 
   .btn-sort-priority,
   .btn-sort-due-date,
-  .btn-add-task {
+  .btn-add-task,
+  .btn-view-history {
     width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
   }
 
   .task-table {

@@ -146,6 +146,9 @@ def register_task_routes(app):
     @login_required
     def api_complete_task(task_id):
         if not ObjectId.is_valid(task_id):
+            # If it's a form submission, redirect back to dashboard
+            if request.form:
+                return redirect(url_for("dashboard"))
             return jsonify({"error": "invalid task id"}), 400
         
         uid = current_uid()
@@ -160,6 +163,13 @@ def register_task_routes(app):
         )
         
         if result.matched_count == 0:
+            # If it's a form submission, redirect back to dashboard
+            if request.form:
+                return redirect(url_for("dashboard"))
             return jsonify({"error": "task not found"}), 404
+        
+        # If it's a form submission, redirect back to dashboard
+        if request.form:
+            return redirect(url_for("dashboard"), code=303)
         
         return jsonify({"completed": True, "task_id": task_id}), 200
