@@ -294,6 +294,7 @@ def dashboard():
 
     category = request.args.get('category', 'all')
     sort_type = request.args.get('sort', 'default')
+    search_query = request.args.get('search', '').strip()
 
     cat_query = {"user_id": uid} if uid else {}
     cats = list(db["categories"].find(cat_query).sort("name", 1))
@@ -309,6 +310,14 @@ def dashboard():
             found = next((c for c in cats if c.get("name") == category), None)
             if found:
                 q["category_id"] = found["_id"]
+
+    # Add search functionality
+    if search_query:
+        # Search in title and description using regex 
+        q["$or"] = [
+            {"title": {"$regex": search_query, "$options": "i"}},
+            {"description": {"$regex": search_query, "$options": "i"}}
+        ]
 
     # Determine sorting based on sort_type parameter
     if sort_type == 'priority':
@@ -368,7 +377,7 @@ def dashboard():
 
     user = {"username": getattr(current_user, "username", "User")}
 
-    return render_template("dashboard.html", user=user, categories=categories, tasks=tasks, upcoming_deadlines=upcoming_deadlines)
+    return render_template("dashboard.html", user=user, categories=categories, tasks=tasks, upcoming_deadlines=upcoming_deadlines, search_query=search_query)
 
 # AAA: 把上面取消注释下面注释起来
 # @app.post("/api/categories")

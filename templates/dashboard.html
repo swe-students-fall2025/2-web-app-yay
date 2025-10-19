@@ -60,20 +60,46 @@
     <section class="main-content">
       <div class="content-header">
         <h2 class="page-title">Task Dashboard</h2>
-        <div class="header-actions">
-          {% if request.args.get('sort') == 'priority' %}
-            <button class="btn-sort-priority active" onclick="clearSort()">📅 Sorted by Priority</button>
-          {% else %}
-            <button class="btn-sort-priority" onclick="sortByPriority()">📅 Sort by Priority</button>
-          {% endif %}
-          {% if request.args.get('sort') == 'due_date' %}
-            <button class="btn-sort-due-date active" onclick="clearSort()">📆 Sorted by Due Date</button>
-          {% else %}
-            <button class="btn-sort-due-date" onclick="sortByDueDate()">📆 Sort by Due Date</button>
-          {% endif %}
-          <a href="/add-task">
-            <button class="btn-add-task">Add Task</button>
-          </a>
+        
+        <div class="controls-section">
+          <div class="search-section">
+            <form method="GET" class="search-form">
+              <input 
+                type="text" 
+                name="search" 
+                placeholder="Search tasks..." 
+                class="search-input"
+                value="{{ request.args.get('search', '') }}"
+              />
+              <button type="submit" class="btn-search">🔍</button>
+              {% if request.args.get('search') %}
+                <button type="button" class="btn-clear-search" onclick="clearSearch()">✕</button>
+              {% endif %}
+              <!-- Preserve other URL parameters -->
+              {% if request.args.get('category') %}
+                <input type="hidden" name="category" value="{{ request.args.get('category') }}">
+              {% endif %}
+              {% if request.args.get('sort') %}
+                <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
+              {% endif %}
+            </form>
+          </div>
+          
+          <div class="header-actions">
+            {% if request.args.get('sort') == 'priority' %}
+              <button class="btn-sort-priority active" onclick="clearSort()">📅 Sorted by Priority</button>
+            {% else %}
+              <button class="btn-sort-priority" onclick="sortByPriority()">📅 Sort by Priority</button>
+            {% endif %}
+            {% if request.args.get('sort') == 'due_date' %}
+              <button class="btn-sort-due-date active" onclick="clearSort()">📆 Sorted by Due Date</button>
+            {% else %}
+              <button class="btn-sort-due-date" onclick="sortByDueDate()">📆 Sort by Due Date</button>
+            {% endif %}
+            <a href="/add-task">
+              <button class="btn-add-task">Add Task</button>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -99,6 +125,14 @@
           </div>
           {% endfor %}
         </div>
+      </div>
+      {% endif %}
+
+      <!-- Search Results Indicator -->
+      {% if search_query %}
+      <div class="search-results-section">
+        <h3 class="search-results-title">🔍 Search Results for "{{ search_query }}"</h3>
+        <p class="search-results-count">{{ tasks|length }} task{{ 's' if tasks|length != 1 else '' }} found</p>
       </div>
       {% endif %}
 
@@ -163,10 +197,16 @@
     }
     
     function clearSort() {
-
+ 
       const urlParams = new URLSearchParams(window.location.search);
-    
+     
       urlParams.delete('sort');
+      window.location.href = `/dashboard?${urlParams.toString()}`;
+    }
+    
+    function clearSearch() {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.delete('search');
       window.location.href = `/dashboard?${urlParams.toString()}`;
     }
   </script>
