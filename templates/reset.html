@@ -22,7 +22,7 @@
       {% endif %}
     {% endwith %}
 
-    <form class="auth-form" method="POST" action="{{ url_for('reset_password_post', token=token) }}">
+    <form class="auth-form" method="POST" action="{{ url_for('reset_password_post') }}">
       <div class="form-group">
         <label for="newPw">New password</label>
         <input id="newPw" name="password" type="password" required minlength="8" placeholder="At least 8 characters">

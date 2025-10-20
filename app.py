@@ -507,7 +507,7 @@ def delete_task(task_id):
 
     flash("Task deleted.", "success")
     return redirect(url_for("dashboard"), code=303)
-    
+
 @app.post("/api/categories")
 @login_required_view
 def api_add_category():
@@ -537,38 +537,9 @@ def api_add_category():
 
 
 # ---------- Forgot password ----------
-def _mask(s: str) -> str:
-    if not s:
-        return ""
-    at = s.find("@")
-    return ("***" + s[at-2:]) if at > 2 else "***"
-
-def send_reset_email(to: str, link: str):
-    host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    port = int(os.getenv("SMTP_PORT", "587"))
-    user = os.getenv("SMTP_USER", "")
-    # Remove ANY whitespace (spaces, tabs, newlines, NBSP) from app password
-    pwd_raw = os.getenv("SMTP_PASS", "") or ""
-    pwd = re.sub(r"\s+", "", pwd_raw)
-    frm = os.getenv("FROM_EMAIL") or user
-
-    msg = EmailMessage()
-    msg["Subject"] = "Reset your password"
-    msg["From"] = frm
-    msg["To"] = to
-    msg.set_content(f"Click to reset your password:\n\n{link}\n\nThis link expires in 1 hour.")
-
-    app.logger.info(f"SMTP connecting host={host} port={port} user=***{user[-4:] if user else ''}")
-    with smtplib.SMTP(host, port, timeout=30) as s:
-        s.ehlo()
-        s.starttls()
-        s.ehlo()
-        s.login(user, pwd)
-        s.send_message(msg)
-
-
 @app.get("/forgot")
 def forgot_password():
+    # Show the form where user types email
     return render_template("forgot.html")
 
 @app.post("/forgot")
@@ -577,78 +548,45 @@ def forgot_password_post():
     user = db.users.find_one({"email": email})
 
     if user:
-        raw, token_hash, exp = _new_reset_token()
-        db.users.update_one(
-            {"_id": user["_id"]},
-            {"$set": {"reset_token_hash": token_hash, "reset_token_exp": exp}}
-        )
-        reset_link = url_for("reset_password", token=raw, _external=True)
+        session["pw_reset_uid"] = str(user["_id"])
 
-        try:
-            send_reset_email(to=email, link=reset_link)
-        except Exception as e:
-            app.logger.exception("Failed to send reset email")
-            # DEV ONLY — remove before production
-            flash(f"DEV: Email send failed: {e}", "error")
+    # Same message either way to avoid user enumeration
+    flash("If that email exists, you can now set a new password.", "success")
+    return redirect(url_for("reset_password"))
 
-    flash("If that email exists, a reset link has been sent.", "success")
-    return redirect(url_for("login"))
-
-
-# ---------- Reset via token ----------
-@app.get("/reset/<token>")
-def reset_password(token):
-    token_hash = _hash_token(token)
-    now = datetime.now(timezone.utc)
-
-    user = db.users.find_one({
-        "reset_token_hash": token_hash,
-        "reset_token_exp": {"$gt": now}
-    })
-
-    if not user:
-        flash("This reset link is invalid or has expired.", "error")
+@app.get("/reset")
+def reset_password():
+    uid = session.get("pw_reset_uid")
+    if not uid:
+        flash("Reset session not found. Start from Forgot Password.", "error")
         return redirect(url_for("forgot_password"))
+    return render_template("reset.html")  # no token needed
 
-    return render_template("reset.html", token=token)
-
-
-@app.post("/reset/<token>")
-def reset_password_post(token):
-    token_hash = _hash_token(token)
-    now = datetime.now(timezone.utc)
-
-    user = db.users.find_one({
-        "reset_token_hash": token_hash,
-        "reset_token_exp": {"$gt": now}
-    })
-
-    if not user:
-        flash("This reset link is invalid or has expired.", "error")
+@app.post("/reset")
+def reset_password_post():
+    uid = session.get("pw_reset_uid")
+    if not uid:
+        flash("Reset session expired. Please try again.", "error")
         return redirect(url_for("forgot_password"))
 
     pw1 = request.form.get("password") or ""
     pw2 = request.form.get("confirm_password") or ""
 
-    # Basic validation
     if pw1 != pw2:
         flash("Passwords do not match.", "error")
-        return redirect(url_for("reset_password", token=token))
+        return redirect(url_for("reset_password"))
     if len(pw1) < 8:
         flash("Password must be at least 8 characters.", "error")
-        return redirect(url_for("reset_password", token=token))
+        return redirect(url_for("reset_password"))
 
-    # Update password and clear token fields
     db.users.update_one(
-    {"_id": user["_id"]},
-    {"$set": {"password_hash": generate_password_hash(pw1)},
-     "$unset": {"reset_token_hash": "", "reset_token_exp": ""}}
-)
+        {"_id": ObjectId(uid)},
+        {"$set": {"password_hash": generate_password_hash(pw1)}}
+    )
 
-    # (Optional) log out all sessions by bumping a session version, if you store one.
+    session.pop("pw_reset_uid", None)
     flash("Your password has been reset. Please log in.", "success")
     return redirect(url_for("login"))
-
 # ---------- Health check ----------
 @app.get("/test")
 def health():
