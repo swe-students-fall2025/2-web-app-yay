@@ -1,12 +1,13 @@
 # app.py
+from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
 import os
 import smtplib
 from dotenv import load_dotenv
 load_dotenv()
 from email.message import EmailMessage
 from functools import wraps
+from flask_login import login_required, current_user
 import secrets, hashlib
-from flask import Flask, render_template, request, redirect, url_for, session, g, flash
 from bson import ObjectId
 from config import settings
 from db import db, ping
@@ -14,12 +15,13 @@ from auth import auth_bp
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta, timezone
 from werkzeug.security import check_password_hash, generate_password_hash
+from todo_AddDelete import register_task_routes
 
 
 app = Flask(__name__)
 app.config.from_object(settings)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
-app.register_blueprint(auth_bp)  # keeps your /api/auth/* JSON endpoints
+app.register_blueprint(auth_bp)
 
 # ---------- Helpers ----------
 def _hash_token(token: str) -> str:
@@ -34,7 +36,7 @@ def login_required_view(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
-            return redirect(url_for("login"))  # endpoint name below
+            return redirect(url_for("login"))
         return f(*args, **kwargs)
     return wrapper
 
@@ -49,9 +51,17 @@ def load_current_user():
 
 @app.context_processor
 def inject_globals():
+    """Make current_user available in all Jinja templates."""
     def to_id(v):
+        # convenience filter if you need str(ObjectId)
         return str(v) if v is not None else None
     return {"current_user": g.current_user, "to_id": to_id}
+
+def current_uid():
+    uid = session.get("user_id")
+    return ObjectId(uid) if uid and ObjectId.is_valid(uid) else None
+
+
 
 # ---------- Sample data (can delete later) ----------
 sample_user = {'username': 'JohnDoe'}
