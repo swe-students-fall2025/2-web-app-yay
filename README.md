@@ -36,12 +36,59 @@ Our vision is to create a simple, user-friendly to-do list web application that 
 
 ## Steps necessary to run the software
 
-**Run the application**
+### Prerequisites
+- Python 3.9 or higher
+- pip (Python package installer)
+
+### Installation and Setup
+
+1. **Install pipenv** (if not already installed)
+   ```bash
+   pip install pipenv
+   ```
+   Or on macOS with Homebrew:
+   ```bash
+   brew install pipenv
+   ```
+
+2. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd 2-web-app-yay
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pipenv install
+   ```
+
+4. **Set up environment variables**
+   
+   Create a `.env` file in the project root with the following variables:
+   ```
+   PORT=3000
+   SECRET_KEY=your-secret-key-here
+   MONGO_URI=your-mongodb-connection-string
+   MONGO_DB=todoapp
+   ```
+
+5. **Run the application**
    ```bash
    pipenv run python app.py
+   ```
+
+6. **Access the application**
+   
+   Open your browser and navigate to:
+   ```
+   http://localhost:3000
    ```
 
 ## Task boards
 
 [Sprint 1](https://github.com/orgs/swe-students-fall2025/projects/13)
 [Sprint 2](https://github.com/orgs/swe-students-fall2025/projects/50)
+
+### Sprint Planning Notes
+
+All user stories were planned and created during Sprint 1. At the end of Sprint 1, we moved any incomplete tickets (those in "To Do" or "In Progress" columns) to the Sprint 2 board to continue working on them. This ensures proper sprint management and allows us to track our progress across both sprints while maintaining visibility of all work items.
