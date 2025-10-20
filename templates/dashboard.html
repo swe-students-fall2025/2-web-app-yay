@@ -139,52 +139,54 @@
       </div>
       {% endif %}
 
-      <table class="task-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Due Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task in tasks %}
-          <tr>
-            <td>{{ task.title }}</td>
-            <td>{{ task.category }}</td>
-            <td>{{ task.status }}</td>
-            <td>{{ task.priority }}</td>
-            <td>{{ task.due_date or 'No due date' }}</td>
-            <td class="action-cell">
-              {% if task.status != 'done' %}
-              <form method="POST" action="/tasks/{{ task.id }}/complete" style="display: inline;">
-                <button 
-                  type="submit" 
-                  class="btn-complete"
-                  title="Mark as completed"
-                >✓</button>
-              </form>
-              {% endif %}
-              <a href="/edit-task/{{ task.id }}" class="btn-edit">✏️</a>
-              <form method="POST" action="/api/tasks/{{ task.id }}/delete" style="display: inline;">
-                <button 
-                  type="submit" 
-                  class="btn-delete"
-                  onclick="return confirm('Delete this task?')"
-                >🗑️</button>
-              </form>
-            </td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="6" class="empty-state">No tasks yet. Click "Add Task" to get started!</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Due Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in tasks %}
+            <tr>
+              <td>{{ task.title }}</td>
+              <td>{{ task.category }}</td>
+              <td>{{ task.status }}</td>
+              <td>{{ task.priority }}</td>
+              <td>{{ task.due_date or 'No due date' }}</td>
+              <td class="action-cell">
+                {% if task.status != 'done' %}
+                <form method="POST" action="/tasks/{{ task.id }}/complete" style="display: inline;">
+                  <button 
+                    type="submit" 
+                    class="btn-complete"
+                    title="Mark as completed"
+                  >✓</button>
+                </form>
+                {% endif %}
+                <a href="/edit-task/{{ task.id }}" class="btn-edit">✏️</a>
+                <form method="POST" action="/api/tasks/{{ task.id }}/delete" style="display: inline;">
+                  <button 
+                    type="submit" 
+                    class="btn-delete"
+                    onclick="return confirm('Delete this task?')"
+                  >🗑️</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="empty-state">No tasks yet. Click "Add Task" to get started!</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 
