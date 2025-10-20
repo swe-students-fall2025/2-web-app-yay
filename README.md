@@ -7,6 +7,9 @@ A little exercise to build a web application following an agile development proc
 Our vision is to create a simple, user-friendly to-do list web application that helps students and professionals stay organized, productive, and focused by allowing them to easily create, categorize, and track their tasks.
 
 ## User stories
+
+[View all issues](https://github.com/swe-students-fall2025/2-web-app-yay/issues)
+
 ### 🏠 landing page
 - As a visitor to the Todo App website, I can understand what the app does in the landing page and how to get started, so that I can decide if it's worth signing up for.
 
@@ -53,7 +56,7 @@ Our vision is to create a simple, user-friendly to-do list web application that 
 
 2. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/swe-students-fall2025/2-web-app-yay.git
    cd 2-web-app-yay
    ```
 
