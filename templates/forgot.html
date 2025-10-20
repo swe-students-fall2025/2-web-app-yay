@@ -14,7 +14,7 @@
   <div class="auth-container">
     <div class="auth-header">
       <h1>Forgot your password?</h1>
-      <p>Enter your email and we’ll send you a reset link.</p>
+      <p>Enter your email and reset your password</p>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -32,7 +32,7 @@
         <label for="fEmail">Email</label>
         <input id="fEmail" name="email" type="email" required placeholder="you@example.com">
       </div>
-      <button type="submit" class="btn-submit">Send reset link</button>
+      <button type="submit" class="btn-submit">Reset Password</button>
     </form>
 
     <div class="auth-footer"><a href="{{ url_for('login') }}">Back to login</a></div>
