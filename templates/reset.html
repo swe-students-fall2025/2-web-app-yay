@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Reset Password</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>Reset your password</h1>
+      <p>Enter a new password for your account.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form class="auth-form" method="POST" action="{{ url_for('reset_password_post', token=token) }}">
+      <div class="form-group">
+        <label for="newPw">New password</label>
+        <input id="newPw" name="password" type="password" required minlength="8" placeholder="At least 8 characters">
+      </div>
+      <div class="form-group">
+        <label for="newPw2">Confirm password</label>
+        <input id="newPw2" name="confirm_password" type="password" required minlength="8">
+      </div>
+      <button type="submit" class="btn-submit">Update password</button>
+    </form>
+
+    <div class="auth-footer"><a href="{{ url_for('login') }}">Back to login</a></div>
+  </div>
+</body>
+</html>
