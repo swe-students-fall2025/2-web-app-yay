@@ -21,51 +21,6 @@ app.config.from_object(settings)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
 app.register_blueprint(auth_bp)  # keeps your /api/auth/* JSON endpoints
 
-# ========= DEV DIAGNOSTICS (remove before prod) =========
-import re, hashlib
-
-@app.get("/dev/env-check")
-def dev_env_check():
-    host = os.getenv("SMTP_HOST")
-    port = os.getenv("SMTP_PORT")
-    user = os.getenv("SMTP_USER")
-    raw_pass = os.getenv("SMTP_PASS") or ""
-    # show length + sha1 so we can tell if changes are picked up, without revealing the secret
-    pass_len = len(raw_pass)
-    pass_sha1 = hashlib.sha1(raw_pass.encode()).hexdigest() if raw_pass else None
-    # also show what our sanitizer will use
-    cleaned = re.sub(r"\s+", "", raw_pass)
-    cleaned_len = len(cleaned)
-    cleaned_sha1 = hashlib.sha1(cleaned.encode()).hexdigest() if cleaned else None
-
-    return {
-        "cwd": os.getcwd(),
-        ".env_loaded": True,
-        "host": host,
-        "port": port,
-        "user": user,
-        "pass_len": pass_len,
-        "pass_sha1": pass_sha1,
-        "cleaned_pass_len": cleaned_len,
-        "cleaned_pass_sha1": cleaned_sha1,
-        "from_email": os.getenv("FROM_EMAIL"),
-    }, 200
-
-
-@app.get("/dev/test-mail")
-def dev_test_mail():
-    try:
-        send_reset_email(os.getenv("SMTP_USER"), "https://example.com/dev-test")
-        return {"ok": True}, 200
-    except Exception as e:
-        app.logger.exception("dev_test_mail failed")
-        return {"ok": False, "error": str(e)}, 500
-# ========================================================
-
-
-
-
-
 # ---------- Helpers ----------
 def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
@@ -122,7 +77,6 @@ def login():
     email = request.args.get("email", "")
     return render_template("login.html", email=email)
 
-# /login POST route (handles form submit)
 @app.post("/login")
 def login_submit():
     email = (request.form.get("email") or "").strip().lower()
