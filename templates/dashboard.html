@@ -49,9 +49,7 @@
 
         <div class="sidebar-bottom">
           <p class="user-info">Logged in as <strong>{{ user.username }}</strong></p>
-          <form action="/logout" method="POST">
-            <button type="submit" class="btn-logout">Log out</button>
-          </form>
+          <a href="{{ url_for('logout_page') }}" class="btn-logout">Log out</a>          
         </div>
       </div>
     </aside>

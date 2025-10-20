@@ -1,22 +1,39 @@
 # app.py
-from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
+from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify, redirect, url_for, session, g, flash
+import os, smtplib, re
+import smtplib
+from dotenv import load_dotenv
+load_dotenv()
+from email.message import EmailMessage
 from functools import wraps
-from flask_login import login_required, current_user
+# from flask_login import login_required, current_user
+import secrets, hashlib
 from bson import ObjectId
-
-from config import settings  
+from config import settings
+from db import db, ping
 from auth import auth_bp
-from db import db, ping 
-
+from datetime import datetime, timedelta, timezone
+from werkzeug.security import check_password_hash, generate_password_hash
 from todo_AddDelete import register_task_routes
+from bson import ObjectId
+from flask import session, redirect, url_for, flash
+
 
 app = Flask(__name__)
 app.config.from_object(settings)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
 app.register_blueprint(auth_bp)
-register_task_routes(app)
+
+# ---------- Helpers ----------
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+def _new_reset_token():
+    """Return (raw_token, token_hash, expires_at_utc)."""
+    raw = secrets.token_urlsafe(32)  # safe to put in URL
+    return raw, _hash_token(raw), datetime.now(timezone.utc) + timedelta(hours=1)
 
 def login_required_view(f):
-    """Redirect to /login if not authenticated (for HTML page routes)."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
@@ -26,7 +43,6 @@ def login_required_view(f):
 
 @app.before_request
 def load_current_user():
-    """Attach current user (if any) to g and inject into templates."""
     g.current_user = None
     uid = session.get("user_id")
     if uid:
@@ -42,13 +58,13 @@ def inject_globals():
         return str(v) if v is not None else None
     return {"current_user": g.current_user, "to_id": to_id}
 
-
 def current_uid():
     uid = session.get("user_id")
     return ObjectId(uid) if uid and ObjectId.is_valid(uid) else None
 
 
-# Global mock data
+
+# ---------- Sample data (can delete later) ----------
 sample_user = {'username': 'JohnDoe'}
 sample_categories = [
     {'id': 1, 'name': 'School'},
@@ -61,21 +77,43 @@ sample_tasks = [
     {'id': 3, 'title': 'Call dentist', 'category': 'Personal', 'status': 'Pending', 'priority': 'Low'}
 ]
 
-@app.route("/")
+# ---------- Public pages ----------
+@app.get("/")
 def home():
     return render_template("landing.html")
 
-@app.route("/login")
+# SINGLE /login GET route (renders the page with optional email)
+@app.get("/login")
 def login():
-    return render_template("login.html")
+    email = request.args.get("email", "")
+    return render_template("login.html", email=email)
 
+@app.post("/login")
+def login_submit():
+    email = (request.form.get("email") or "").strip().lower()
+    password = request.form.get("password") or ""
+
+    user = db.users.find_one({"email": email})
+    # Check password using Werkzeug's secure hash comparison
+    if not user or not check_password_hash(user.get("password_hash"), password):
+        flash("Invalid email or password", "error")
+        # PRG pattern; keep the typed email
+        return redirect(url_for("login", email=email))
+
+    # success
+    session["user_id"] = str(user["_id"])                     # <— use user_id consistently
+    session["name"] = user.get("name") or user.get("email")
+    flash("Welcome back!", "success")
+    return redirect(url_for("dashboard"))
+    
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
-@app.route("/logout", methods=["GET", "POST"])
+@app.get("/logout")
 def logout_page():
     session.clear()
+    flash("You’ve been logged out.", "success")
     return redirect(url_for("home"))
 
 # @app.route("/add-task")
@@ -96,7 +134,7 @@ def add_task():
         status = (data.get("status") or "todo").lower()
         due_date_str = data.get("due_date")
         description = (data.get("description") or "").strip()
-        
+
         if not title:
             return redirect(url_for("add_task"))
         cat_id = None
@@ -124,12 +162,12 @@ def add_task():
             "created_at": now,
             "updated_at": now,
         }
-        
+
         db.tasks.insert_one(task_doc)
         return redirect(url_for("dashboard"), code=303)
     cats = list(db["categories"].find({"user_id": uid}).sort("name", 1))
     categories = [{"id": str(c["_id"]), "name": c.get("name", "")} for c in cats]
-    
+
     return render_template("add_task.html", categories=categories)
 
 @app.route("/tasks/<task_id>/complete", methods=["POST"])
@@ -138,10 +176,10 @@ def complete_task(task_id):
     uid = current_uid()
     if not uid:
         return redirect(url_for("login"))
-    
+
     if not ObjectId.is_valid(task_id):
         return redirect(url_for("dashboard"))
-    
+
     from datetime import datetime
     db.tasks.update_one(
         {"_id": ObjectId(task_id), "user_id": uid},
@@ -151,7 +189,7 @@ def complete_task(task_id):
             "updated_at": datetime.utcnow()
         }}
     )
-    
+
     return redirect(url_for("dashboard"))
 
 # @app.route("/history")
@@ -164,14 +202,14 @@ def edit_task(task_id):
     uid = current_uid()
     if not uid:
         return redirect(url_for("login"))
-    
+
     if not ObjectId.is_valid(task_id):
         return redirect(url_for("dashboard"))
-    
+
     task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": uid})
     if not task:
         return redirect(url_for("dashboard"))
-    
+
     if request.method == "POST":
         data = request.form
         title = (data.get("title") or "").strip()
@@ -180,14 +218,14 @@ def edit_task(task_id):
         status = (data.get("status") or "todo").lower()
         due_date_str = data.get("due_date")
         description = (data.get("description") or "").strip()
-        
+
         if not title:
             return redirect(url_for("edit_task", task_id=task_id))
-        
+
         cat_id = None
         if category_id and ObjectId.is_valid(category_id):
             cat_id = ObjectId(category_id)
-        
+
         due_date = None
         if due_date_str:
             try:
@@ -195,10 +233,10 @@ def edit_task(task_id):
                 due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
             except ValueError:
                 pass
-        
+
         priority_map = {"high": 1, "medium": 2, "low": 3}
         priority_val = priority_map.get(priority, 2)
-        
+
         from datetime import datetime
         db.tasks.update_one(
             {"_id": ObjectId(task_id)},
@@ -213,15 +251,15 @@ def edit_task(task_id):
             }}
         )
         return redirect(url_for("dashboard"), code=303)
-    
+
     # GET request - show edit form
     cats = list(db["categories"].find({"user_id": uid}).sort("name", 1))
     categories = [{"id": str(c["_id"]), "name": c.get("name", "")} for c in cats]
-    
+
     def pri_to_text(p):
         if isinstance(p, str): return p
         return {1: "High", 2: "Medium", 3: "Low"}.get(p, "Medium")
-    
+
     # Format task data for template
     task_data = {
         "id": str(task["_id"]),
@@ -232,7 +270,7 @@ def edit_task(task_id):
         "due_date": task.get("due_date").strftime("%Y-%m-%d") if task.get("due_date") else "",
         "description": task.get("description", "")
     }
-    
+
     return render_template("edit_task.html", task=task_data, categories=categories)
 
 @app.route("/history")
@@ -266,7 +304,6 @@ def history():
         })
     
     return render_template("todo_history.html", tasks=completed_tasks, categories=categories)
-
 # 解释一下：上面被注释掉的代码都是我原来实现用url取userid的逻辑，下面新的代码都是需要登陆后从user session里面取id。目前全部实现代码我都改成了要求登陆，
 # 如果有问题可以把下面的代码注释了，把上面代码取消注释就可以看我原来的代码实现逻辑。
 # AAA: 把上面取消注释下面注释起来
@@ -330,7 +367,7 @@ def history():
 @app.route('/dashboard')
 @login_required_view
 def dashboard():
-    # NOTE: 登录后不再从 URL 拿 user_id；直接从 session 取
+        # NOTE: 登录后不再从 URL 拿 user_id；直接从 session 取
     uid = current_uid()
 
     category = request.args.get('category', 'all')
@@ -343,7 +380,7 @@ def dashboard():
     cat_map = {c["_id"]: c.get("name", "") for c in cats}
 
     q = {"user_id": uid} if uid else {}
-    
+
     # Exclude completed tasks from dashboard (they should only appear in history)
     q["status"] = {"$ne": "done"}
 
@@ -386,12 +423,12 @@ def dashboard():
 
     tasks = []
     upcoming_deadlines = []  # For notification section
-    
+
     for t in tasks_cur:
         cname = cat_map.get(t.get("category_id")) or t.get("category", "")
         due_date = t.get("due_date")
         due_date_str = due_date.strftime("%Y-%m-%d") if due_date else None
-        
+
         tasks.append({
             "id": str(t["_id"]),
             "title": t.get("title", ""),
@@ -400,14 +437,14 @@ def dashboard():
             "priority": pri_to_text(t.get("priority", "Medium")),
             "due_date": due_date_str,
         })
-        
+
         # Calculate days until deadline for upcoming tasks
         if t.get("due_date") and t.get("status") != "done":
             from datetime import datetime
             due_date = t.get("due_date")
             today = datetime.utcnow()
             days_left = (due_date - today).days
-            
+
             # Only show tasks due within 7 days
             if days_left >= 0 and days_left <= 7:
                 upcoming_deadlines.append({
@@ -415,7 +452,7 @@ def dashboard():
                     "days_left": days_left,
                     "priority": pri_to_text(t.get("priority", "Medium"))
                 })
-    
+
     # Sort by days_left (most urgent first)
     upcoming_deadlines.sort(key=lambda x: x["days_left"])
 
@@ -453,6 +490,23 @@ def dashboard():
 #         return redirect(url_for("dashboard", category="all", user_id=user_id), code=303)
 #     return jsonify({"created": True, "name": name}), 201
 
+@app.post("/api/tasks/<task_id>/delete")
+@login_required_view
+def delete_task(task_id):
+    uid = session.get("user_id")
+    if not uid:
+        return redirect(url_for("login"))
+
+    # Validate id
+    if not ObjectId.is_valid(task_id):
+        flash("Invalid task id.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Delete only if it belongs to the current user
+    db.tasks.delete_one({"_id": ObjectId(task_id), "user_id": ObjectId(uid)})
+
+    flash("Task deleted.", "success")
+    return redirect(url_for("dashboard"), code=303)
 
 @app.post("/api/categories")
 @login_required_view
@@ -482,9 +536,63 @@ def api_add_category():
     return jsonify({"created": True, "name": name}), 201
 
 
+# ---------- Forgot password ----------
+@app.get("/forgot")
+def forgot_password():
+    # Show the form where user types email
+    return render_template("forgot.html")
+
+@app.post("/forgot")
+def forgot_password_post():
+    email = (request.form.get("email") or "").strip().lower()
+    user = db.users.find_one({"email": email})
+
+    if user:
+        session["pw_reset_uid"] = str(user["_id"])
+
+    # Same message either way to avoid user enumeration
+    flash("If that email exists, you can now set a new password.", "success")
+    return redirect(url_for("reset_password"))
+
+@app.get("/reset")
+def reset_password():
+    uid = session.get("pw_reset_uid")
+    if not uid:
+        flash("Reset session not found. Start from Forgot Password.", "error")
+        return redirect(url_for("forgot_password"))
+    return render_template("reset.html")  # no token needed
+
+@app.post("/reset")
+def reset_password_post():
+    uid = session.get("pw_reset_uid")
+    if not uid:
+        flash("Reset session expired. Please try again.", "error")
+        return redirect(url_for("forgot_password"))
+
+    pw1 = request.form.get("password") or ""
+    pw2 = request.form.get("confirm_password") or ""
+
+    if pw1 != pw2:
+        flash("Passwords do not match.", "error")
+        return redirect(url_for("reset_password"))
+    if len(pw1) < 8:
+        flash("Password must be at least 8 characters.", "error")
+        return redirect(url_for("reset_password"))
+
+    db.users.update_one(
+        {"_id": ObjectId(uid)},
+        {"$set": {"password_hash": generate_password_hash(pw1)}}
+    )
+
+    session.pop("pw_reset_uid", None)
+    flash("Your password has been reset. Please log in.", "success")
+    return redirect(url_for("login"))
+# ---------- Health check ----------
 @app.get("/test")
 def health():
     return {"status": "ok", "db": "ok" if ping() else "down"}, 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=3000)
+
+

@@ -122,6 +122,20 @@ body {
   text-decoration: underline;
 }
 
+.form-meta {
+  margin: 6px 0 12px;
+  text-align: right;
+}
+
+.forgot-link {
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
 /* Error Message Styles */
 .error-message {
   background-color: #fef2f2;

@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>To-Do List - Login</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <style>
+    .flash-stack { margin-bottom: 12px; }
+    .flash {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f3f4f6;
+      font-size: 0.95rem;
+    }
+    .flash.error   { background:#fee2e2; border-color:#fecaca; color:#991b1b; }
+    .flash.success { background:#dcfce7; border-color:#bbf7d0; color:#166534; }
+  </style>
 </head>
 <body>
 
@@ -14,33 +26,57 @@
       <p>Login to manage your tasks</p>
     </div>
 
-    <!-- Login Form -->
-    <form class="auth-form" method="POST" action="/api/auth/login">
-      <!-- Error message container -->
-      <div id="error-message" class="error-message" style="display: none;"></div>
-      
+    <!-- Flash banners -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Login Form (classic POST to HTML route) -->
+    <form class="auth-form" method="POST" action="{{ url_for('login_submit') }}">
       <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required placeholder="Enter your email">
-        <span id="email-error" class="field-error" style="display: none;"></span>
+        <label for="loginUsername">Email</label>
+        <input
+          type="email"
+          id="loginUsername"
+          name="email"
+          required
+          placeholder="Enter your email"
+          value="{{ email|default('') }}"
+        >
       </div>
+
       <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required placeholder="Enter your password">
-        <span id="password-error" class="field-error" style="display: none;"></span>
+        <label for="loginPassword">Password</label>
+        <input
+          type="password"
+          id="loginPassword"
+          name="password"
+          required
+          placeholder="Enter your password"
+        >
       </div>
+
+      <div class="form-meta">
+        <a class="forgot-link" href="{{ url_for('forgot_password') }}">Forgot password?</a>
+      </div>
+
       <button type="submit" class="btn-submit">Login</button>
     </form>
 
     <!-- Sign Up Link -->
     <div class="auth-footer">
       <p>
-        Don't have an account? 
+        Don't have an account?
         <a href="/signup">Sign up</a>
       </p>
     </div>
   </div>
-
   <script>
     // Validation functions
     function validateEmail(email) {
@@ -87,12 +123,12 @@
       const errorDiv = document.getElementById('error-message');
       errorDiv.style.display = 'none';
       clearAllFieldErrors();
-      
+
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      
+
       let hasErrors = false;
-      
+
       // Validate email
       if (!email) {
         showFieldError('email', 'Email is required');
@@ -101,27 +137,27 @@
         showFieldError('email', 'Please enter a valid email address (e.g., user@example.com)');
         hasErrors = true;
       }
-      
+
       // Validate password
       if (!password) {
         showFieldError('password', 'Password is required');
         hasErrors = true;
       }
-      
+
       if (hasErrors) {
         return;
       }
-      
+
       try {
         const body = new URLSearchParams(new FormData(e.target));
         const res = await fetch('/api/auth/login', { method:'POST', body });
-        
+
         if (res.ok) {
           location.href = '/dashboard';
         } else {
           const data = await res.json();
           let errorText = 'Login failed';
-          
+
           // Handle specific error messages
           if (data.error === 'invalid email or password') {
             errorText = 'Invalid email or password. Please try again.';
@@ -130,7 +166,7 @@
           } else if (data.error) {
             errorText = data.error;
           }
-          
+
           errorDiv.textContent = errorText;
           errorDiv.style.display = 'block';
         }
@@ -141,6 +177,5 @@
       }
     });
     </script>
-
 </body>
 </html>
