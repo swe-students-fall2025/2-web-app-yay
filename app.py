@@ -1,21 +1,22 @@
 # app.py
-from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify
-import os
+from flask import Flask, render_template, redirect, url_for, session, g, request, jsonify, redirect, url_for, session, g, flash
+import os, smtplib, re
 import smtplib
 from dotenv import load_dotenv
 load_dotenv()
 from email.message import EmailMessage
 from functools import wraps
-from flask_login import login_required, current_user
+# from flask_login import login_required, current_user
 import secrets, hashlib
 from bson import ObjectId
 from config import settings
 from db import db, ping
 from auth import auth_bp
-from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta, timezone
 from werkzeug.security import check_password_hash, generate_password_hash
 from todo_AddDelete import register_task_routes
+from bson import ObjectId
+from flask import session, redirect, url_for, flash
 
 
 app = Flask(__name__)
@@ -489,7 +490,24 @@ def dashboard():
 #         return redirect(url_for("dashboard", category="all", user_id=user_id), code=303)
 #     return jsonify({"created": True, "name": name}), 201
 
+@app.post("/api/tasks/<task_id>/delete")
+@login_required_view
+def delete_task(task_id):
+    uid = session.get("user_id")
+    if not uid:
+        return redirect(url_for("login"))
 
+    # Validate id
+    if not ObjectId.is_valid(task_id):
+        flash("Invalid task id.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Delete only if it belongs to the current user
+    db.tasks.delete_one({"_id": ObjectId(task_id), "user_id": ObjectId(uid)})
+
+    flash("Task deleted.", "success")
+    return redirect(url_for("dashboard"), code=303)
+    
 @app.post("/api/categories")
 @login_required_view
 def api_add_category():
